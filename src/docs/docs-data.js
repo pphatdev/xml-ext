@@ -77,6 +77,7 @@ The source editor provides a desktop-grade coding experience right in your brows
 - **Dynamic Line Numbers**: Gutter with synchronized line counts and cursor coordinates.
 - **Find and Replace**: Built-in search bar with match count indicator, previous/next navigation, single replace, and replace-all (\`Ctrl+F\`).
 - **Prettify / Format**: Formats messy, unindented, or minified XML into clean 2-space indented structures.
+- **Format as Entities**: Dropdown menu offering Named (\`&amp;\`, \`&lt;\`), Numeric (\`&#160;\`), Hex (\`&#xA0;\`), and Entity Decoding to UTF-8 without double-escaping.
 - **Minifier**: Strips superfluous whitespace and comments while preserving CDATA blocks, achieving significant size reductions.
 - **Undo / Redo History**: History stack supporting multi-step undo (\`Ctrl+Z\`) and redo (\`Ctrl+Y\` / \`Ctrl+Shift+Z\`).
 
@@ -304,7 +305,17 @@ Generated XML output:
   <version>1.0.0</version>
   <private>true</private>
 </project>
-\`\`\``
+\`\`\`
+
+---
+
+## 6. Format as XML Entities
+
+Standardize XML entity encoding and compliance:
+- **Numeric Entities (\`&#160;\`)**: Converts non-ASCII and special characters to decimal XML character references, guaranteeing 100% interoperability with all XML 1.0 parsers.
+- **Hexadecimal Entities (\`&#xA0;\`)**: Formats characters into compact hexadecimal references.
+- **Named XML Entities**: Restricts escaping to the 5 standard XML 1.0 predefined entities (\`&amp;\`, \`&lt;\`, \`&gt;\`, \`&quot;\`, \`&apos;\`) while mapping legacy HTML entities (like \`&copy;\`) to valid XML numeric references (\`&#169;\`).
+- **Decode to UTF-8**: Safely decodes character references back to plain text while protecting XML syntax markup.\``
   },
 
   {

@@ -6,6 +6,7 @@
  */
 
 import { xmlToJson, jsonToXml, xmlToTxt, xmlToCsv, xmlToYaml } from '../core/converter.js';
+import { formatXml } from '../core/formatter.js';
 import { parseMarkdown } from '../core/markdown.js';
 import { showToast } from './toast.js';
 
@@ -27,6 +28,7 @@ export class XmlConverterView {
         <div class="converter-toolbar">
           <div class="converter-format-tabs">
             <button type="button" class="tab-btn active" data-target="json">XML to JSON</button>
+            <button type="button" class="tab-btn" data-target="entities">Format Entities</button>
             <button type="button" class="tab-btn" data-target="txt">XML to TXT</button>
             <button type="button" class="tab-btn" data-target="csv">XML to CSV</button>
             <button type="button" class="tab-btn" data-target="yaml">XML to YAML</button>
@@ -81,6 +83,21 @@ export class XmlConverterView {
             </label>
             <label class="form-check-inline">
               <input type="radio" name="json-mode" value="detailed" /> Detailed (Badgerfish)
+            </label>
+          </div>
+
+          <div id="opts-entities" class="conv-opt-group hidden">
+            <label class="form-check-inline">
+              <input type="radio" name="conv-entity-mode" value="numeric" checked /> Numeric (&#160;)
+            </label>
+            <label class="form-check-inline">
+              <input type="radio" name="conv-entity-mode" value="hex" /> Hex (&#xA0;)
+            </label>
+            <label class="form-check-inline">
+              <input type="radio" name="conv-entity-mode" value="named" /> Named XML (&amp;amp;)
+            </label>
+            <label class="form-check-inline">
+              <input type="radio" name="conv-entity-mode" value="decode" /> Decode to UTF-8
             </label>
           </div>
 
@@ -203,10 +220,11 @@ export class XmlConverterView {
 
   updateOptionsVisibility() {
     this.container.querySelector('#opts-json').classList.toggle('hidden', this.activeTarget !== 'json');
+    this.container.querySelector('#opts-entities').classList.toggle('hidden', this.activeTarget !== 'entities');
     this.container.querySelector('#opts-txt').classList.toggle('hidden', this.activeTarget !== 'txt');
     this.container.querySelector('#opts-csv').classList.toggle('hidden', this.activeTarget !== 'csv');
     this.container.querySelector('#opts-json2xml').classList.toggle('hidden', this.activeTarget !== 'json2xml');
-    this.btnLoadEditor.classList.toggle('hidden', this.activeTarget !== 'json2xml');
+    this.btnLoadEditor.classList.toggle('hidden', this.activeTarget !== 'json2xml' && this.activeTarget !== 'entities');
 
     if (this.activeTarget === 'json2xml') {
       this.outputTextarea.readOnly = false;
@@ -256,6 +274,10 @@ export class XmlConverterView {
         const json = xmlToJson(this.currentXml, { mode });
         this.convertedOutput = JSON.stringify(json, null, 2);
         lang = 'json';
+      } else if (this.activeTarget === 'entities') {
+        const entityMode = this.container.querySelector('input[name="conv-entity-mode"]:checked')?.value || 'numeric';
+        this.convertedOutput = formatXml(this.currentXml, { indent: '  ', entities: entityMode });
+        lang = 'xml';
       } else if (this.activeTarget === 'txt') {
         const mode = this.container.querySelector('input[name="txt-mode"]:checked').value;
         this.convertedOutput = xmlToTxt(this.currentXml, { mode });
@@ -324,6 +346,7 @@ export class XmlConverterView {
 
     const extMap = {
       json: { ext: 'json', mime: 'application/json' },
+      entities: { ext: 'xml', mime: 'application/xml' },
       txt: { ext: 'txt', mime: 'text/plain' },
       csv: { ext: 'csv', mime: 'text/csv' },
       yaml: { ext: 'yaml', mime: 'text/yaml' },

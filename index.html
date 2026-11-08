@@ -95,12 +95,42 @@
       <div class="toolbar-divider"></div>
 
       <!-- Core Operations -->
-      <button type="button" id="btn-format" class="btn-secondary" title="Format / Prettify XML (Alt+Shift+F)">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-        </svg>
-        Format
-      </button>
+      <div class="split-btn-group" id="format-split-group">
+        <button type="button" id="btn-format" class="btn-secondary split-main-btn" title="Format / Prettify XML (Alt+Shift+F)">
+          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+          </svg>
+          Format
+        </button>
+        <button type="button" id="btn-format-dropdown" class="btn-secondary split-toggle-btn" aria-label="Format Options" title="Format with Entity Options">
+          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <div class="dropdown-menu hidden" id="format-dropdown-menu">
+          <button type="button" class="dropdown-item" data-entity-mode="auto">
+            <span class="dropdown-item-title">Format (Prettify)</span>
+            <span class="dropdown-item-desc">Standard indentation &amp; entity preservation</span>
+          </button>
+          <button type="button" class="dropdown-item" data-entity-mode="named">
+            <span class="dropdown-item-title">Format as Named Entities</span>
+            <span class="dropdown-item-desc">Escape &amp;, &lt;, &gt;, &quot;, &apos;</span>
+          </button>
+          <button type="button" class="dropdown-item" data-entity-mode="numeric">
+            <span class="dropdown-item-title">Format as Numeric Entities</span>
+            <span class="dropdown-item-desc">Escape symbols and non-ASCII as &amp;#160;</span>
+          </button>
+          <button type="button" class="dropdown-item" data-entity-mode="hex">
+            <span class="dropdown-item-title">Format as Hex Entities</span>
+            <span class="dropdown-item-desc">Escape symbols and non-ASCII as &amp;#xA0;</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item" data-entity-mode="decode">
+            <span class="dropdown-item-title">Decode Entities to Text</span>
+            <span class="dropdown-item-desc">Restore character references to UTF-8</span>
+          </button>
+        </div>
+      </div>
 
       <button type="button" id="btn-minify" class="btn-secondary" title="Minify XML (strip redundant whitespace and comments)">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">

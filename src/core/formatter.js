@@ -1,15 +1,17 @@
 /**
  * XML Formatter / Beautifier
- * Prettifies XML with customizable indentation, attribute wrapping, and CDATA preservation.
+ * Prettifies XML with customizable indentation, entity formatting (named, numeric, hex, decoded),
+ * attribute wrapping, and CDATA preservation.
  */
 
-import { parseXml } from './parser.js';
+import { parseXml, encodeEntities, decodeEntities } from './parser.js';
 
 export function formatXml(xmlString, options = {}) {
   const {
     indent = '  ', // 2 spaces by default (or '    ', '\t')
     preserveComments = true,
-    selfCloseEmpty = true
+    selfCloseEmpty = true,
+    entities = 'auto' // 'auto' | 'named' | 'numeric' | 'hex' | 'decode'
   } = options;
 
   if (!xmlString || !xmlString.trim()) return '';
@@ -59,7 +61,8 @@ export function formatXml(xmlString, options = {}) {
     if (node.type === 'text') {
       const text = (node.text || '').trim();
       if (text) {
-        lines.push(`${currentIndent}${escapeXmlText(text)}`);
+        const formattedText = formatNodeEntities(text, entities, false);
+        lines.push(`${currentIndent}${formattedText}`);
       }
       return;
     }
@@ -68,7 +71,10 @@ export function formatXml(xmlString, options = {}) {
       const attrEntries = Object.entries(node.attributes || {});
       let attrStr = '';
       if (attrEntries.length > 0) {
-        attrStr = ' ' + attrEntries.map(([k, v]) => `${k}="${escapeXmlAttr(v)}"`).join(' ');
+        attrStr = ' ' + attrEntries.map(([k, v]) => {
+          const formattedVal = formatNodeEntities(String(v), entities, true);
+          return `${k}="${formattedVal}"`;
+        }).join(' ');
       }
 
       // Check children
@@ -90,7 +96,7 @@ export function formatXml(xmlString, options = {}) {
 
       // Case 2: Single short text child -> inline <tag>text</tag>
       if (children.length === 1 && children[0].type === 'text') {
-        const textVal = escapeXmlText(children[0].text.trim());
+        const textVal = formatNodeEntities(children[0].text.trim(), entities, false);
         if (!textVal.includes('\n') && (currentIndent.length + node.name.length * 2 + attrStr.length + textVal.length + 5) <= 100) {
           lines.push(`${currentIndent}<${node.name}${attrStr}>${textVal}</${node.name}>`);
           return;
@@ -111,21 +117,45 @@ export function formatXml(xmlString, options = {}) {
   return lines.join('\n');
 }
 
-function escapeXmlText(str) {
+function formatNodeEntities(str, mode = 'auto', isAttr = false) {
   if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+
+  if (mode === 'decode') {
+    const decoded = decodeEntities(str, { htmlEntities: true });
+    return encodeEntities(decoded, { mode: 'xml', quote: isAttr, preserveExisting: false });
+  }
+
+  if (mode === 'numeric') {
+    return encodeEntities(str, { mode: 'numeric', quote: isAttr, preserveExisting: true, convertHtmlEntities: true });
+  }
+
+  if (mode === 'hex') {
+    return encodeEntities(str, { mode: 'hex', quote: isAttr, preserveExisting: true, convertHtmlEntities: true });
+  }
+
+  // 'auto' or 'named'
+  return encodeEntities(str, { mode: 'xml', quote: isAttr, preserveExisting: true, convertHtmlEntities: true });
 }
 
-function escapeXmlAttr(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+/**
+ * Format XML document as Entities (escapes symbols and non-ASCII as numeric or hex XML entities)
+ * @param {string} xmlString
+ * @param {'numeric'|'hex'|'named'} [entityMode='numeric']
+ * @param {object} [options]
+ * @returns {string} Formatted XML with entities
+ */
+export function formatXmlAsEntities(xmlString, entityMode = 'numeric', options = {}) {
+  return formatXml(xmlString, { ...options, entities: entityMode });
+}
+
+/**
+ * Decode XML entities back to literal characters where safe
+ * @param {string} xmlString
+ * @param {object} [options]
+ * @returns {string} XML with decoded entities
+ */
+export function decodeXmlEntities(xmlString, options = {}) {
+  return formatXml(xmlString, { ...options, entities: 'decode' });
 }
 
 function fallbackFormatXml(xml, indent) {

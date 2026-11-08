@@ -9,6 +9,20 @@ Deno.test('Entities encoding and decoding', () => {
   assertEquals(decoded, text);
 });
 
+Deno.test('Entities numeric and hex encoding and HTML entity decoding', () => {
+  const text = 'Price: €100 © 2026';
+  const numeric = encodeEntities(text, { mode: 'numeric' });
+  assert(numeric.includes('&#8364;'));
+  assert(numeric.includes('&#169;'));
+
+  const hex = encodeEntities(text, { mode: 'hex' });
+  assert(hex.includes('&#x20AC;'));
+  assert(hex.includes('&#xA9;'));
+
+  const decodedHtml = decodeEntities('&copy; 2026 &euro; &trade; &#160;');
+  assertEquals(decodedHtml, '© 2026 € ™ \u00A0');
+});
+
 Deno.test('Parse simple XML document', () => {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <root id="main" enabled="true">

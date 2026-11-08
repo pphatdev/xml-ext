@@ -333,6 +333,98 @@ body {
   background-color: rgba(255, 255, 255, 0.08);
 }
 
+/* Split Button Group */
+.split-btn-group {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.split-btn-group .split-main-btn {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.split-btn-group .split-toggle-btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  padding: 0.45rem 0.45rem;
+}
+
+.split-btn-group .split-toggle-btn svg {
+  transition: transform 0.15s ease;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 270px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  padding: 0.4rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: dropdown-pop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdown-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: none;
+  background: transparent;
+  color: var(--text-normal);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-family: var(--font-sans);
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-hover);
+  color: #fff;
+}
+
+.dropdown-item-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.dropdown-item-desc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.3rem 0.2rem;
+}
+
 .btn-sm {
   font-size: 0.75rem;
   padding: 0.28rem 0.55rem;

@@ -19,25 +19,97 @@ export const REVERSE_XML_ENTITIES = {
   "'": '&apos;'
 };
 
-export function decodeEntities(text) {
+export const COMMON_HTML_ENTITIES = {
+  nbsp: 160, iexcl: 161, cent: 162, pound: 163, curren: 164, yen: 165,
+  brvbar: 166, sect: 167, uml: 168, copy: 169, ordf: 170, laquo: 171,
+  not: 172, shy: 173, reg: 174, macr: 175, deg: 176, plusmn: 177,
+  sup2: 178, sup3: 179, acute: 180, micro: 181, para: 182, middot: 183,
+  cedil: 184, sup1: 185, ordm: 186, raquo: 187, frac14: 188, frac12: 189,
+  frac34: 190, iquest: 191, Agrave: 192, Aacute: 193, Acirc: 194, Atilde: 195,
+  Auml: 196, Aring: 197, AElig: 198, Ccedil: 199, Egrave: 200, Eacute: 201,
+  Ecirc: 202, Euml: 203, Igrave: 204, Iacute: 205, Icirc: 206, Iuml: 207,
+  ETH: 208, Ntilde: 209, Ograve: 210, Oacute: 211, Ocirc: 212, Otilde: 213,
+  Ouml: 214, times: 215, Oslash: 216, Ugrave: 217, Uacute: 218, Ucirc: 219,
+  Uuml: 220, Yacute: 221, THORN: 222, szlig: 223, agrave: 224, aacute: 225,
+  acirc: 226, atilde: 227, auml: 228, aring: 229, aelig: 230, ccedil: 231,
+  egrave: 232, eacute: 233, ecirc: 234, euml: 235, igrave: 236, iacute: 237,
+  icirc: 238, iuml: 239, eth: 240, ntilde: 241, ograve: 242, oacute: 243,
+  ocirc: 244, otilde: 245, ouml: 246, divide: 247, oslash: 248, ugrave: 249,
+  uacute: 250, ucirc: 251, uuml: 252, yacute: 253, thorn: 254, yuml: 255,
+  euro: 8364, trade: 8482, ndash: 8211, mdash: 8212, lsquo: 8216, rsquo: 8217,
+  sbquo: 8218, ldquo: 8220, rdquo: 8221, bdquo: 8222, dagger: 8224, Dagger: 8225,
+  bull: 8226, hellip: 8230, permil: 8240, lsaquo: 8249, rsaquo: 8250
+};
+
+export function decodeEntities(text, options = {}) {
   if (!text) return '';
-  return text
+  const { htmlEntities = true } = options;
+  let res = text
     .replace(/&(amp|lt|gt|quot|apos);/g, (match) => XML_ENTITIES[match] || match)
     .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
     .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+  if (htmlEntities) {
+    res = res.replace(/&([a-zA-Z]+);/g, (match, name) => {
+      const code = COMMON_HTML_ENTITIES[name];
+      if (code !== undefined) {
+        return String.fromCharCode(code);
+      }
+      return match;
+    });
+  }
+
+  return res;
 }
 
 export function encodeEntities(text, options = {}) {
   if (!text) return '';
-  const { quote = false } = options;
-  let res = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  if (quote) {
-    res = res.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  const {
+    mode = 'xml', // 'xml' | 'numeric' | 'hex'
+    quote = false,
+    preserveExisting = true,
+    convertHtmlEntities = true
+  } = options;
+
+  let s = text;
+
+  // 1. Convert HTML named entities to standard XML numeric entities if present
+  if (convertHtmlEntities) {
+    s = s.replace(/&([a-zA-Z]+);/g, (match, name) => {
+      if (['amp', 'lt', 'gt', 'quot', 'apos'].includes(name)) {
+        return match;
+      }
+      const code = COMMON_HTML_ENTITIES[name];
+      if (code !== undefined) {
+        return mode === 'hex' ? `&#x${code.toString(16).toUpperCase()};` : `&#${code};`;
+      }
+      return match;
+    });
   }
-  return res;
+
+  // 2. Escape bare ampersands not part of a valid XML entity or numeric entity
+  if (preserveExisting) {
+    s = s.replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
+  } else {
+    s = s.replace(/&/g, '&amp;');
+  }
+
+  // 3. Escape < and >
+  s = s.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // 4. Escape quotes if in attribute context
+  if (quote) {
+    s = s.replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+
+  // 5. Numeric or hex encoding for non-ASCII characters
+  if (mode === 'numeric') {
+    s = s.replace(/[^\x00-\x7F]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+  } else if (mode === 'hex') {
+    s = s.replace(/[^\x00-\x7F]/g, (ch) => `&#x${ch.charCodeAt(0).toString(16).toUpperCase()};`);
+  }
+
+  return s;
 }
 
 export class ParseError extends Error {

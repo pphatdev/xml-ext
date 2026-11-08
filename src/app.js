@@ -130,10 +130,36 @@ export class App {
       }
     });
 
-    // Format (Prettify)
-    document.getElementById('btn-format').addEventListener('click', () => {
-      this.formatCurrentXml();
-    });
+    // Format (Prettify) & Entity Dropdown
+    const btnFormat = document.getElementById('btn-format');
+    if (btnFormat) {
+      btnFormat.addEventListener('click', () => {
+        this.formatCurrentXml('auto');
+      });
+    }
+
+    const btnFormatDropdown = document.getElementById('btn-format-dropdown');
+    const formatDropdownMenu = document.getElementById('format-dropdown-menu');
+
+    if (btnFormatDropdown && formatDropdownMenu) {
+      btnFormatDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+        formatDropdownMenu.classList.toggle('hidden');
+      });
+
+      formatDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const mode = item.dataset.entityMode || 'auto';
+          formatDropdownMenu.classList.add('hidden');
+          this.formatCurrentXml(mode);
+        });
+      });
+
+      window.addEventListener('click', () => {
+        formatDropdownMenu.classList.add('hidden');
+      });
+    }
 
     // Minify
     document.getElementById('btn-minify').addEventListener('click', () => {
@@ -296,14 +322,21 @@ export class App {
     }
   }
 
-  formatCurrentXml() {
+  formatCurrentXml(entityMode = 'auto') {
     const xml = this.editor.getValue();
     if (!xml.trim()) return;
 
     try {
-      const formatted = formatXml(xml, { indent: '  ', preserveComments: true });
+      const formatted = formatXml(xml, { indent: '  ', preserveComments: true, entities: entityMode });
       this.editor.setValue(formatted, true);
-      showToast('XML formatted cleanly', 'success');
+      const modeLabels = {
+        auto: 'XML formatted cleanly',
+        named: 'XML formatted with named entities (&amp;, &lt;, &gt;)',
+        numeric: 'XML formatted with numeric character references (&#...;)',
+        hex: 'XML formatted with hexadecimal character references (&#x...;)',
+        decode: 'XML entities decoded to characters'
+      };
+      showToast(modeLabels[entityMode] || 'XML formatted', 'success');
     } catch (err) {
       showToast(`Format failed: ${err.message}`, 'error');
     }
