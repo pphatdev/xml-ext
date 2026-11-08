@@ -149,6 +149,59 @@
   opacity: 1;
 }
 
+/* Mermaid Flowchart Canvas */
+.chart-canvas-wrap.theme-mermaid {
+  background-color: #0f172a;
+}
+
+.mermaid-node {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mermaid-node:hover .mermaid-node-rect {
+  stroke: #93c5fd;
+  filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.7));
+}
+
+.mermaid-node-rect {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mermaid-edge {
+  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.mermaid-edge:hover {
+  stroke: #93c5fd;
+  stroke-width: 2.5px;
+}
+
+/* Relational Network Graph Canvas */
+.chart-canvas-wrap.theme-graph {
+  background-color: #0b0f19;
+}
+
+.graph-node {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.graph-node:hover .graph-circle {
+  filter: drop-shadow(0 0 12px rgba(96, 165, 250, 0.85));
+  stroke-width: 3.5px;
+  stroke: #93c5fd;
+}
+
+.graph-link {
+  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.graph-link:hover {
+  stroke: #60a5fa;
+  stroke-width: 2.8px;
+}
+
 .tree-canvas-svg {
   width: 100%;
   height: 100%;

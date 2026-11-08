@@ -11,7 +11,7 @@ import { showToast } from './toast.js';
 export class XmlChartView {
   constructor(containerEl) {
     this.container = containerEl;
-    this.activeChartType = 'card-flow'; // 'card-flow' (new format default) | 'hierarchy' | 'frequency' | 'depth'
+    this.activeChartType = 'card-flow'; // 'card-flow' | 'hierarchy' | 'mermaid' | 'graph' | 'frequency' | 'depth'
     this.currentData = null;
     this.cardFlowData = null;
 
@@ -40,13 +40,25 @@ export class XmlChartView {
               </svg>
               Card Flow
             </button>
-            <button type="button" class="tab-btn" data-chart="hierarchy" title="Horizontal Node-Link Tree">
+            <button type="button" class="tab-btn" data-chart="hierarchy" title="Horizontal Node-Link Hierarchy Tree">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"/>
               </svg>
-              Hierarchy Tree
+              Hierarchy
             </button>
-            <button type="button" class="tab-btn" data-chart="frequency" title="Element Tag Frequency">
+            <button type="button" class="tab-btn" data-chart="mermaid" title="Mermaid Flowchart Diagram & Code">
+              <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+              Mermaid
+            </button>
+            <button type="button" class="tab-btn" data-chart="graph" title="Interactive Relational Network Graph">
+              <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 2a3 3 0 100 6 3 3 0 000-6zM3 13a3 3 0 100 6 3 3 0 000-6zM17 13a3 3 0 100 6 3 3 0 000-6zM6.5 13.5l2.2-4.2m2.6 0l2.2 4.2"/>
+              </svg>
+              Graph
+            </button>
+            <button type="button" class="tab-btn" data-chart="frequency" title="Element Tag Frequency Distribution">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
               </svg>
@@ -56,10 +68,17 @@ export class XmlChartView {
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L9.586 10l1.293 1.293a1 1 0 001.414 0l3-3z" clip-rule="evenodd"/>
               </svg>
-              Depth Distribution
+              Depth
             </button>
           </div>
           <div class="chart-actions">
+            <button type="button" id="btn-chart-copy-mermaid" class="btn-sm hidden" title="Copy Mermaid syntax code">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+              </svg>
+              Copy Mermaid
+            </button>
             <button type="button" id="btn-chart-expand-all" class="btn-sm" title="Expand all nodes">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/>
@@ -209,6 +228,20 @@ export class XmlChartView {
       });
     }
 
+    const btnCopyMermaid = this.container.querySelector('#btn-chart-copy-mermaid');
+    if (btnCopyMermaid) {
+      btnCopyMermaid.addEventListener('click', () => {
+        if (this.currentMermaidCode) {
+          navigator.clipboard.writeText(this.currentMermaidCode);
+          showToast('Mermaid syntax copied to clipboard', 'success');
+        } else if (this.currentData && this.currentData.hierarchy) {
+          const code = this.generateMermaidCode(this.currentData.hierarchy);
+          navigator.clipboard.writeText(code);
+          showToast('Mermaid syntax copied to clipboard', 'success');
+        }
+      });
+    }
+
     this.container.querySelector('#btn-chart-expand-all').addEventListener('click', () => {
       this.collapsedNodeIds.clear();
       this.refreshChart();
@@ -327,18 +360,33 @@ export class XmlChartView {
     const overlay = this.canvasWrap.querySelector('.chart-overlay-controls');
     if (overlay) overlay.classList.remove('hidden');
 
+    const btnCopyMermaid = this.container.querySelector('#btn-chart-copy-mermaid');
+    if (btnCopyMermaid) {
+      btnCopyMermaid.classList.toggle('hidden', this.activeChartType !== 'mermaid');
+    }
+
+    const btnExpand = this.container.querySelector('#btn-chart-expand-all');
+    const btnCollapse = this.container.querySelector('#btn-chart-collapse-all');
+    const isBarChart = this.activeChartType === 'frequency' || this.activeChartType === 'depth';
+    if (btnExpand) btnExpand.classList.toggle('hidden', isBarChart);
+    if (btnCollapse) btnCollapse.classList.toggle('hidden', isBarChart);
+
+    this.canvasWrap.classList.toggle('theme-card-flow', this.activeChartType === 'card-flow');
+    this.canvasWrap.classList.toggle('theme-mermaid', this.activeChartType === 'mermaid');
+    this.canvasWrap.classList.toggle('theme-graph', this.activeChartType === 'graph');
+
     if (this.activeChartType === 'card-flow') {
-      this.canvasWrap.classList.add('theme-card-flow');
       this.renderCardFlow(this.cardFlowData);
-    } else {
-      this.canvasWrap.classList.remove('theme-card-flow');
-      if (this.activeChartType === 'hierarchy') {
-        this.renderHorizontalHierarchy(this.currentData.hierarchy);
-      } else if (this.activeChartType === 'frequency') {
-        this.renderFrequencyBarChart(this.currentData.tagFrequency);
-      } else if (this.activeChartType === 'depth') {
-        this.renderDepthChart(this.currentData.depthDistribution);
-      }
+    } else if (this.activeChartType === 'hierarchy') {
+      this.renderHorizontalHierarchy(this.currentData.hierarchy);
+    } else if (this.activeChartType === 'mermaid') {
+      this.renderMermaid(this.currentData.hierarchy);
+    } else if (this.activeChartType === 'graph') {
+      this.renderGraph(this.currentData.hierarchy);
+    } else if (this.activeChartType === 'frequency') {
+      this.renderFrequencyBarChart(this.currentData.tagFrequency);
+    } else if (this.activeChartType === 'depth') {
+      this.renderDepthChart(this.currentData.depthDistribution);
     }
   }
 
@@ -898,6 +946,296 @@ export class XmlChartView {
     if (showNotice) {
       showToast('Chart fitted to screen', 'info');
     }
+  }
+
+  generateMermaidCode(root) {
+    if (!root) return '';
+    const lines = ['flowchart LR'];
+    let counter = 0;
+    const idMap = new Map();
+
+    function getId(node) {
+      if (!idMap.has(node)) {
+        idMap.set(node, `node_${++counter}`);
+      }
+      return idMap.get(node);
+    }
+
+    function sanitize(text) {
+      return String(text || '').replace(/["[\]()]/g, "'").trim();
+    }
+
+    function walk(node) {
+      const curId = getId(node);
+      let label = node.name || 'node';
+      if (node.inlineText) {
+        label += `: ${node.inlineText}`;
+      }
+      if (node.attributes && Object.keys(node.attributes).length > 0) {
+        const attrs = Object.entries(node.attributes).map(([k, v]) => `${k}="${v}"`).join(' ');
+        label += ` [${attrs}]`;
+      }
+
+      lines.push(`    ${curId}["${sanitize(label)}"]`);
+
+      if (node.children) {
+        for (const child of node.children) {
+          const childId = getId(child);
+          lines.push(`    ${curId} --> ${childId}`);
+          walk(child);
+        }
+      }
+    }
+
+    walk(root);
+    return lines.join('\n');
+  }
+
+  renderMermaid(root) {
+    if (!root) {
+      this.renderEmptyState('No hierarchy to generate Mermaid diagram.');
+      return;
+    }
+
+    this.currentMermaidCode = this.generateMermaidCode(root);
+
+    let leafRowIndex = 0;
+    const rowHeight = 54;
+    const colSpacing = 280;
+    const nodes = [];
+    const links = [];
+    const self = this;
+
+    function layoutNode(node, depth = 0) {
+      const isCollapsed = self.collapsedNodeIds.has(node._id);
+      node.isCollapsed = isCollapsed;
+      node.depth = depth;
+      node.x = depth * colSpacing;
+
+      let label = node.name || 'node';
+      if (node.inlineText) {
+        label += `: ${node.inlineText}`;
+      }
+      if (node.attributes && Object.keys(node.attributes).length > 0) {
+        const attrs = Object.entries(node.attributes).map(([k, v]) => `${k}="${v}"`).join(' ');
+        label += ` [${attrs}]`;
+      }
+      node.mermaidLabel = label;
+      node.width = Math.min(340, Math.max(130, label.length * 7.5 + 36));
+      node.height = 36;
+
+      const hasChildren = node.children && node.children.length > 0;
+      const isExpanded = hasChildren && !isCollapsed;
+
+      if (!isExpanded) {
+        node.y = leafRowIndex * rowHeight;
+        leafRowIndex++;
+      } else {
+        for (const child of node.children) {
+          layoutNode(child, depth + 1);
+        }
+        const first = node.children[0];
+        const last = node.children[node.children.length - 1];
+        node.y = (first.y + last.y) / 2;
+      }
+
+      nodes.push(node);
+      if (isExpanded) {
+        for (const child of node.children) {
+          links.push({ parent: node, child });
+        }
+      }
+    }
+
+    layoutNode(root, 0);
+
+    const defsSvg = `
+      <defs>
+        <marker id="mermaid-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#60a5fa" />
+        </marker>
+        <filter id="mermaid-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#3b82f6" flood-opacity="0.3"/>
+        </filter>
+      </defs>
+    `;
+
+    let linksSvg = '';
+    for (const link of links) {
+      const p = link.parent;
+      const c = link.child;
+      const x1 = p.x + p.width;
+      const y1 = p.y + p.height / 2;
+      const x2 = c.x;
+      const y2 = c.y + c.height / 2;
+      const midX = (x1 + x2) / 2;
+      const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+      linksSvg += `<path class="mermaid-edge" d="${d}" stroke="#60a5fa" stroke-width="1.8" fill="none" marker-end="url(#mermaid-arrow)" />`;
+    }
+
+    let nodesSvg = '';
+    for (const n of nodes) {
+      const hasChildren = n.children && n.children.length > 0;
+      const isCollapsed = n.isCollapsed;
+      const badgeColor = n.depth === 0 ? '#3b82f6' : (hasChildren ? '#8b5cf6' : '#10b981');
+
+      nodesSvg += `
+        <g class="mermaid-node" data-id="${escapeXml(n._id)}" transform="translate(${n.x}, ${n.y})">
+          <rect width="${n.width}" height="${n.height}" rx="8" ry="8"
+                fill="#1e293b" stroke="${badgeColor}" stroke-width="1.6" class="mermaid-node-rect" filter="url(#mermaid-glow)" />
+          <circle cx="16" cy="18" r="5" fill="${badgeColor}" />
+          <text x="28" y="22" class="mermaid-node-text" fill="#f8fafc" font-size="12" font-family="ui-monospace, monospace">
+            ${escapeXml(truncate(n.mermaidLabel, 34))}
+          </text>
+          ${hasChildren ? `
+            <circle cx="${n.width - 12}" cy="18" r="7" fill="${isCollapsed ? '#f59e0b' : 'rgba(255,255,255,0.2)'}" class="mermaid-collapse-btn" />
+            <text x="${n.width - 12}" y="21" text-anchor="middle" font-size="9" fill="#ffffff" font-weight="700">${isCollapsed ? '+' : '-'}</text>
+          ` : ''}
+        </g>
+      `;
+    }
+
+    this.viewportGroup.innerHTML = `
+      ${defsSvg}
+      <g class="mermaid-links-group">${linksSvg}</g>
+      <g class="mermaid-nodes-group">${nodesSvg}</g>
+    `;
+
+    const nodeEls = this.viewportGroup.querySelectorAll('.mermaid-node');
+    nodeEls.forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.id;
+        if (id) {
+          if (self.collapsedNodeIds.has(id)) {
+            self.collapsedNodeIds.delete(id);
+          } else {
+            self.collapsedNodeIds.add(id);
+          }
+          self.refreshChart();
+        }
+      });
+    });
+
+    this.updateViewportTransform();
+  }
+
+  renderGraph(root) {
+    if (!root) {
+      this.renderEmptyState('No hierarchy to generate relational graph.');
+      return;
+    }
+
+    const nodes = [];
+    const links = [];
+    let counter = 0;
+    const levels = [];
+
+    function collectLevels(node, depth = 0) {
+      if (!levels[depth]) levels[depth] = [];
+      node._graphIndex = counter++;
+      node.depth = depth;
+      levels[depth].push(node);
+      nodes.push(node);
+      if (node.children) {
+        for (const child of node.children) {
+          links.push({ source: node, target: child });
+          collectLevels(child, depth + 1);
+        }
+      }
+    }
+
+    collectLevels(root, 0);
+
+    const centerX = 400;
+    const centerY = 320;
+    root.gx = centerX;
+    root.gy = centerY;
+
+    const radii = [0, 190, 360, 520, 680, 840];
+
+    for (let d = 1; d < levels.length; d++) {
+      const levelNodes = levels[d];
+      const r = radii[d] || (d * 160);
+      const angleStep = (2 * Math.PI) / Math.max(1, levelNodes.length);
+      const startAngle = -Math.PI / 2;
+
+      levelNodes.forEach((node, idx) => {
+        const angle = startAngle + idx * angleStep;
+        node.gx = centerX + r * Math.cos(angle);
+        node.gy = centerY + r * Math.sin(angle);
+      });
+    }
+
+    const defsSvg = `
+      <defs>
+        <marker id="graph-arrow" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="rgba(148, 163, 184, 0.7)" />
+        </marker>
+        <radialGradient id="root-halo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.45" />
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+    `;
+
+    let linksSvg = '';
+    for (const link of links) {
+      const s = link.source;
+      const t = link.target;
+      linksSvg += `
+        <line class="graph-link" x1="${s.gx}" y1="${s.gy}" x2="${t.gx}" y2="${t.gy}"
+              stroke="rgba(148, 163, 184, 0.35)" stroke-width="1.6" marker-end="url(#graph-arrow)" />
+      `;
+    }
+
+    let nodesSvg = '';
+    for (const n of nodes) {
+      let r = 18;
+      let strokeColor = '#10b981';
+      let fillColor = '#064e3b';
+
+      if (n.depth === 0) {
+        r = 28;
+        strokeColor = '#3b82f6';
+        fillColor = '#1e3a8a';
+      } else if (n.depth === 1) {
+        r = 22;
+        strokeColor = '#8b5cf6';
+        fillColor = '#2e1065';
+      } else if (n.children && n.children.length > 0) {
+        r = 18;
+        strokeColor = '#06b6d4';
+        fillColor = '#164e63';
+      } else {
+        r = 14;
+        strokeColor = '#f59e0b';
+        fillColor = '#78350f';
+      }
+
+      const label = n.name || 'node';
+      const subLabel = n.inlineText ? truncate(n.inlineText, 16) : '';
+
+      nodesSvg += `
+        <g class="graph-node" data-id="${escapeXml(n._id)}" transform="translate(${n.gx}, ${n.gy})">
+          ${n.depth === 0 ? `<circle r="46" fill="url(#root-halo)" />` : ''}
+          <circle r="${r}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="2" class="graph-circle" />
+          <text text-anchor="middle" dy="4" fill="#ffffff" font-size="${r > 16 ? 11 : 9}" font-weight="600" class="graph-node-label">
+            ${escapeXml(truncate(label, r > 20 ? 8 : 5))}
+          </text>
+          <text text-anchor="middle" dy="${r + 14}" fill="#cbd5e1" font-size="11" font-family="ui-monospace, monospace" class="graph-sublabel">
+            ${escapeXml(label)}${subLabel ? `: ${escapeXml(subLabel)}` : ''}
+          </text>
+        </g>
+      `;
+    }
+
+    this.viewportGroup.innerHTML = `
+      ${defsSvg}
+      <g class="graph-links-group">${linksSvg}</g>
+      <g class="graph-nodes-group">${nodesSvg}</g>
+    `;
+
+    this.updateViewportTransform();
   }
 
   renderFrequencyBarChart(tags) {
