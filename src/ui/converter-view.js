@@ -102,19 +102,17 @@ export class XmlConverterView {
 
           <div class="converter-actions">
             <!-- Toggle Highlighted Preview vs Raw Text -->
-            <button type="button" id="btn-toggle-preview-mode" class="btn-sm" title="Toggle between Highlighted Code Preview and Raw Text">
+            <button type="button" id="btn-toggle-preview-mode" class="btn-sm" title="Toggle between Highlighted Code Preview and Raw Text" aria-label="Toggle between Highlighted Code Preview and Raw Text">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
               </svg>
-              <span id="preview-mode-text">Raw Text</span>
             </button>
 
             <!-- Word Wrap Toggle -->
-            <button type="button" id="btn-toggle-wrap" class="btn-sm" title="Toggle Word Wrap (fit text to window width)">
+            <button type="button" id="btn-toggle-wrap" class="btn-sm" title="Toggle Word Wrap (fit text to window width)" aria-label="Toggle Word Wrap">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h7a1 1 0 110 2H4a1 1 0 01-1-1zm11.293 1.293a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L17 14.414V17a1 1 0 11-2 0v-2.586l-1.293 1.293a1 1 0 01-1.414-1.414l3-3z" clip-rule="evenodd"/>
               </svg>
-              Wrap
             </button>
 
             <!-- Copy Preview Content -->
@@ -219,7 +217,14 @@ export class XmlConverterView {
       this.outputTextarea.classList.toggle('hidden', !isRaw);
     }
 
-    this.previewModeText.textContent = isRaw ? 'Preview' : 'Raw Text';
+    if (this.previewModeText) {
+      this.previewModeText.textContent = isRaw ? 'Preview' : 'Raw Text';
+    }
+    if (this.btnToggleMode) {
+      this.btnToggleMode.classList.toggle('active', isRaw);
+      this.btnToggleMode.title = isRaw ? 'Switch to Highlighted Preview' : 'Switch to Raw Text';
+      this.btnToggleMode.setAttribute('aria-label', this.btnToggleMode.title);
+    }
   }
 
   updateOptionsVisibility() {
