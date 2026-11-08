@@ -1,0 +1,22 @@
+{
+  "name": "xml-ext",
+  "version": "1.0.0",
+  "exports": "./src/app.js",
+  "tasks": {
+    "test": "deno test",
+    "dev": "python3 -m http.server 3000",
+    "fmt": "deno fmt src/ tests/",
+    "lint": "deno lint src/ tests/"
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-explicit-any", "no-unused-vars"]
+    }
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "singleQuote": true
+  }
+}

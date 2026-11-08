@@ -1,0 +1,237 @@
+/**
+ * XML Tree View Styles
+ */
+
+.tree-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-primary);
+}
+
+.tree-toolbar {
+  padding: 0.5rem 0.75rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tree-search-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.tree-search-wrap .search-icon {
+  position: absolute;
+  left: 8px;
+  width: 14px;
+  height: 14px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.tree-search-input {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-normal);
+  font-size: 0.75rem;
+  padding: 0.35rem 0.6rem 0.35rem 1.8rem;
+  border-radius: 6px;
+  outline: none;
+}
+
+.tree-search-input:focus {
+  border-color: var(--primary);
+}
+
+.tree-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.tree-content {
+  flex: 1;
+  padding: 0.75rem;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 22px;
+}
+
+.tree-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.tree-node {
+  position: relative;
+}
+
+.tree-children {
+  padding-left: 1.25rem;
+  border-left: 1px dashed var(--border-color);
+  margin-left: 0.55rem;
+}
+
+.tree-node-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: background-color 0.1s;
+}
+
+.tree-node-row:hover {
+  background-color: var(--bg-hover);
+}
+
+.tree-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 9px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, color 0.15s;
+}
+
+.tree-toggle:hover {
+  color: var(--text-normal);
+}
+
+.tree-toggle.expanded {
+  transform: rotate(90deg);
+  color: var(--primary);
+}
+
+.tree-toggle-placeholder, .tree-bullet {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--border-light);
+  font-size: 10px;
+}
+
+.tree-tag-name {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+[data-theme="light"] .tree-tag-name {
+  color: #0284c7;
+}
+
+.attr-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  font-size: 11px;
+}
+
+.attr-name {
+  color: #a78bfa;
+}
+
+[data-theme="light"] .attr-name {
+  color: #7c3aed;
+}
+
+.attr-val {
+  color: #34d399;
+}
+
+[data-theme="light"] .attr-val {
+  color: #059669;
+}
+
+.tree-inline-val {
+  color: #fde047;
+  font-style: italic;
+}
+
+[data-theme="light"] .tree-inline-val {
+  color: #b45309;
+}
+
+.tree-text-content {
+  color: var(--text-muted);
+}
+
+.tree-comment-content {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.tree-badge {
+  font-size: 9px;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+.cdata-badge {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.tree-child-count {
+  font-size: 10px;
+  background-color: var(--bg-hover);
+  color: var(--text-dim);
+  padding: 0.05rem 0.35rem;
+  border-radius: 9999px;
+}
+
+.btn-copy-xpath {
+  opacity: 0;
+  font-size: 9px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 3px;
+  padding: 0.05rem 0.3rem;
+  cursor: pointer;
+  transition: opacity 0.15s, background-color 0.15s;
+  margin-left: 0.5rem;
+}
+
+.tree-node-row:hover .btn-copy-xpath {
+  opacity: 1;
+}
+
+.btn-copy-xpath:hover {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.highlight-match {
+  background-color: rgba(234, 179, 8, 0.25) !important;
+  border: 1px solid #eab308;
+}

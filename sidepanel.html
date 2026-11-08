@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XML Pro Side Panel</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/editor.css" />
+  <link rel="stylesheet" href="css/tree-view.css" />
+  <link rel="stylesheet" href="css/chart.css" />
+  <style>
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidepanel-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidepanel-toolbar {
+      padding: 0.5rem 0.75rem;
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .sidepanel-tabs {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.35rem 0.75rem;
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+    }
+    .sidepanel-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header" style="padding: 0.5rem 0.75rem;">
+    <div class="brand-group">
+      <div class="brand-icon" style="width: 26px; height: 26px;">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="brand-name" style="font-size: 1rem;">XML Pro Panel</span>
+    </div>
+
+    <div class="header-right">
+      <button type="button" id="btn-sidepanel-full" class="btn-sm" title="Open Full Studio in Tab">Expand ↗</button>
+      <button type="button" id="btn-sidepanel-theme" class="btn-icon theme-toggle-btn" title="Toggle Theme">🌓</button>
+    </div>
+  </header>
+
+  <div class="sidepanel-toolbar">
+    <div class="toolbar-group">
+      <button type="button" id="btn-sp-format" class="btn-sm">Format</button>
+      <button type="button" id="btn-sp-minify" class="btn-sm">Minify</button>
+      <button type="button" id="btn-sp-validate" class="btn-sm">Validate</button>
+    </div>
+    <div class="toolbar-group">
+      <button type="button" id="btn-sp-copy" class="btn-sm">Copy</button>
+      <button type="button" id="btn-sp-sitemap" class="btn-primary btn-sm">Sitemap</button>
+    </div>
+  </div>
+
+  <div class="sidepanel-tabs">
+    <button type="button" class="tab-btn active" data-view="editor">Editor</button>
+    <button type="button" class="tab-btn" data-view="tree">Tree</button>
+    <button type="button" class="tab-btn" data-view="converter">Convert</button>
+    <button type="button" class="tab-btn" data-view="linter">Linter</button>
+    <button type="button" class="tab-btn" data-view="analyzer">Analyzer</button>
+  </div>
+
+  <main class="sidepanel-container">
+    <div id="sp-pane-editor" class="sidepanel-pane"></div>
+    <div id="sp-pane-tree" class="sidepanel-pane hidden"></div>
+    <div id="sp-pane-converter" class="sidepanel-pane hidden"></div>
+    <div id="sp-pane-linter" class="sidepanel-pane hidden"></div>
+    <div id="sp-pane-analyzer" class="sidepanel-pane hidden"></div>
+  </main>
+
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

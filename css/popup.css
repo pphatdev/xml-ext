@@ -1,0 +1,122 @@
+/**
+ * Extension Popup Styles (Compact)
+ */
+
+body.popup-body {
+  width: 440px;
+  height: 560px;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-normal);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+.popup-header {
+  padding: 0.65rem 0.85rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.popup-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.popup-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.popup-actions-top {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-open-studio {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-open-studio:hover {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.popup-toolbar {
+  padding: 0.4rem 0.75rem;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.popup-tabs {
+  display: flex;
+  gap: 0.2rem;
+  background-color: var(--bg-secondary);
+  padding: 0.3rem 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.popup-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.popup-textarea {
+  flex: 1;
+  width: 100%;
+  padding: 0.65rem;
+  background-color: var(--bg-input);
+  color: var(--text-normal);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  border: none;
+  outline: none;
+  resize: none;
+}
+
+.popup-preview {
+  flex: 1;
+  overflow: auto;
+  padding: 0.65rem;
+  background-color: var(--bg-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.popup-status-bar {
+  padding: 0.35rem 0.75rem;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}

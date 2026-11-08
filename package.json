@@ -1,0 +1,24 @@
+{
+  "name": "xml-ext",
+  "version": "1.0.0",
+  "description": "XML Extension project featuring Editor, Linter, Analyzer, Minifier, Sitemap Generator, Validator, and Multi-Format Converters (XML, Tree, JSON, Chart, TXT).",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "test": "deno test",
+    "dev": "python3 -m http.server 3000"
+  },
+  "keywords": [
+    "xml",
+    "chrome-extension",
+    "xml-editor",
+    "xml-linter",
+    "xml-validator",
+    "sitemap-generator",
+    "xml-to-json",
+    "tree-view",
+    "xml-charts"
+  ],
+  "author": "",
+  "license": "MIT"
+}

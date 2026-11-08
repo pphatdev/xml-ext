@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XML Pro Toolkit</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/popup.css" />
+  <link rel="stylesheet" href="css/tree-view.css" />
+</head>
+<body class="popup-body">
+  <div class="popup-header">
+    <div class="popup-brand">
+      <div class="brand-icon" style="width: 24px; height: 24px;">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 14px; height: 14px;">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="popup-title">XML Pro</span>
+    </div>
+
+    <div class="popup-actions-top">
+      <button type="button" id="btn-popup-open-full" class="btn-open-studio" title="Open full studio in a new tab">
+        Full Studio ↗
+      </button>
+      <button type="button" id="btn-popup-theme" class="btn-icon theme-toggle-btn" title="Toggle theme">
+        🌓
+      </button>
+    </div>
+  </div>
+
+  <div class="popup-toolbar">
+    <div class="toolbar-group">
+      <button type="button" id="btn-popup-format" class="btn-sm">Format</button>
+      <button type="button" id="btn-popup-minify" class="btn-sm">Minify</button>
+      <button type="button" id="btn-popup-validate" class="btn-sm">Validate</button>
+    </div>
+    <div class="toolbar-group">
+      <button type="button" id="btn-popup-copy" class="btn-sm">Copy</button>
+      <button type="button" id="btn-popup-clear" class="btn-sm">Clear</button>
+    </div>
+  </div>
+
+  <div class="popup-tabs">
+    <button type="button" class="tab-btn active" data-tab="editor">Editor</button>
+    <button type="button" class="tab-btn" data-tab="tree">Tree View</button>
+    <button type="button" class="tab-btn" data-tab="json">JSON</button>
+  </div>
+
+  <div class="popup-content">
+    <div id="popup-pane-editor" class="tab-pane active" style="height: 100%;">
+      <textarea id="popup-xml-input" class="popup-textarea" placeholder="Paste XML here to format, minify, or convert..."></textarea>
+    </div>
+
+    <div id="popup-pane-tree" class="tab-pane" style="height: 100%;">
+      <div id="popup-tree-container" class="popup-preview"></div>
+    </div>
+
+    <div id="popup-pane-json" class="tab-pane" style="height: 100%;">
+      <textarea id="popup-json-output" class="popup-textarea" readonly placeholder="Converted JSON will appear here..."></textarea>
+    </div>
+  </div>
+
+  <div class="popup-status-bar">
+    <span id="popup-status-badge" class="val-badge val-badge-empty">Ready</span>
+    <span id="popup-size-info">0 B</span>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

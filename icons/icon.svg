@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <linearGradient id="slashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bgGrad)" stroke="#334155" stroke-width="3"/>
+
+  <!-- Left bracket < -->
+  <path d="M 46 44 L 26 64 L 46 84" fill="none" stroke="url(#accentGrad)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Closing slash / -->
+  <path d="M 72 38 L 56 90" fill="none" stroke="url(#slashGrad)" stroke-width="9" stroke-linecap="round"/>
+
+  <!-- Right bracket > -->
+  <path d="M 82 44 L 102 64 L 82 84" fill="none" stroke="url(#accentGrad)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Small accent dots -->
+  <circle cx="64" cy="22" r="3" fill="#38bdf8" opacity="0.8"/>
+  <circle cx="64" cy="106" r="3" fill="#818cf8" opacity="0.8"/>
+</svg>
