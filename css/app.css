@@ -815,6 +815,15 @@ body {
   font-weight: 600;
 }
 
+.tab-format-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  vertical-align: middle;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
 .pane-content {
   flex: 1;
   overflow: hidden;
@@ -1346,33 +1355,53 @@ body {
   color: var(--text-dim);
 }
 
-/* Copy button */
+/* Language Icon */
+.code-lang-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 3px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.code-lang-icon-svg {
+  width: 14px;
+  height: 14px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* Copy button - sleek icon button */
 .btn-copy-code {
   background: transparent;
   border: 1px solid var(--code-border);
   color: var(--text-muted);
-  font-size: 0.72rem;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  padding: 0.25rem 0.55rem;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .btn-copy-code:hover {
   background-color: var(--bg-hover);
   color: var(--text-normal);
   border-color: var(--border-light);
+  transform: translateY(-1px);
 }
 
 .btn-copy-code.copied {
   background-color: var(--success-bg);
   border-color: var(--success);
   color: var(--success);
+  transform: none;
 }
 
 /* Code body & Line numbers */

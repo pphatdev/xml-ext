@@ -82,12 +82,13 @@ export function parseMarkdown(mdString) {
                   <span class="code-dot dot-yellow"></span>
                   <span class="code-dot dot-green"></span>
                 </div>
-                <div class="code-header-badge">
+                <div class="code-header-badge" title="${escapeHtml(codeLang || 'text')}">
+                  ${getLanguageIconHtml(codeLang)}
                   <span class="code-lang">${escapeHtml(codeLang || 'text')}</span>
                   <span class="code-line-count">${linesCount} ${linesCount === 1 ? 'line' : 'lines'}</span>
                 </div>
               </div>
-              <button type="button" class="btn-copy-code" title="Copy code" data-code="${escapeHtml(codeContent)}">
+              <button type="button" class="btn-copy-code" title="Copy code" aria-label="Copy code" data-code="${escapeHtml(codeContent)}">
                 <svg class="icon-sm icon-copy" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
                   <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
@@ -95,7 +96,6 @@ export function parseMarkdown(mdString) {
                 <svg class="icon-sm icon-check hidden" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
-                <span class="copy-label">Copy</span>
               </button>
             </div>
             <div class="code-body-wrapper">
@@ -406,4 +406,33 @@ function highlightYaml(code) {
     l = l.replace(/:\s*(\d+(?:\.\d+)?)\b/g, `: <span class="token-number">$1</span>`);
     return l;
   }).join('\n');
+}
+
+function getLanguageIconHtml(lang) {
+  const norm = (lang || '').toLowerCase().trim();
+  const iconMap = {
+    json: 'icons/json.png',
+    csv: 'icons/csv.png',
+    tsv: 'icons/csv.png',
+    txt: 'icons/txt.png',
+    text: 'icons/txt.png',
+    yaml: 'icons/yaml.png',
+    yml: 'icons/yaml.png',
+    xml: 'icons/icon.svg',
+    rss: 'icons/icon.svg',
+    atom: 'icons/icon.svg',
+    svg: 'icons/icon.svg',
+    html: 'icons/icon.svg'
+  };
+
+  const iconSrc = iconMap[norm];
+  if (iconSrc) {
+    return `<img src="${iconSrc}" class="code-lang-icon" alt="${escapeHtml(norm)}" title="${escapeHtml(norm.toUpperCase())}" />`;
+  }
+
+  return `
+    <svg class="icon-sm code-lang-icon-svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+    </svg>
+  `;
 }

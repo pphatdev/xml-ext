@@ -27,12 +27,32 @@ export class XmlConverterView {
       <div class="converter-wrapper">
         <div class="converter-toolbar">
           <div class="converter-format-tabs">
-            <button type="button" class="tab-btn active" data-target="json">XML to JSON</button>
-            <button type="button" class="tab-btn" data-target="entities">Format Entities</button>
-            <button type="button" class="tab-btn" data-target="txt">XML to TXT</button>
-            <button type="button" class="tab-btn" data-target="csv">XML to CSV</button>
-            <button type="button" class="tab-btn" data-target="yaml">XML to YAML</button>
-            <button type="button" class="tab-btn" data-target="json2xml">JSON to XML</button>
+            <button type="button" class="tab-btn active" data-target="json">
+              <img src="icons/json.png" class="tab-format-icon" alt="JSON" />
+              <span>XML to JSON</span>
+            </button>
+            <button type="button" class="tab-btn" data-target="entities">
+              <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+              </svg>
+              <span>Format Entities</span>
+            </button>
+            <button type="button" class="tab-btn" data-target="txt">
+              <img src="icons/txt.png" class="tab-format-icon" alt="TXT" />
+              <span>XML to TXT</span>
+            </button>
+            <button type="button" class="tab-btn" data-target="csv">
+              <img src="icons/csv.png" class="tab-format-icon" alt="CSV" />
+              <span>XML to CSV</span>
+            </button>
+            <button type="button" class="tab-btn" data-target="yaml">
+              <img src="icons/yaml.png" class="tab-format-icon" alt="YAML" />
+              <span>XML to YAML</span>
+            </button>
+            <button type="button" class="tab-btn" data-target="json2xml">
+              <img src="icons/json.png" class="tab-format-icon" alt="JSON" />
+              <span>JSON to XML</span>
+            </button>
           </div>
           <div class="converter-actions">
             <!-- Toggle Highlighted Preview vs Raw Text -->
