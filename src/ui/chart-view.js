@@ -60,8 +60,24 @@ export class XmlChartView {
             </button>
           </div>
           <div class="chart-actions">
-            <button type="button" id="btn-chart-expand-all" class="btn-sm" title="Expand all nodes">Expand All</button>
-            <button type="button" id="btn-chart-collapse-all" class="btn-sm" title="Collapse all nodes">Collapse All</button>
+            <button type="button" id="btn-chart-expand-all" class="btn-sm" title="Expand all nodes">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/>
+              </svg>
+              Expand All
+            </button>
+            <button type="button" id="btn-chart-collapse-all" class="btn-sm" title="Collapse all nodes">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd"/>
+              </svg>
+              Collapse All
+            </button>
+            <button type="button" id="btn-chart-fit" class="btn-sm" title="Fit diagram to screen (auto-center and scale)">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7V3h4m10 4V3h-4M3 13v4h4m10-4v4h-4"/>
+              </svg>
+              Fit View
+            </button>
             <button type="button" id="btn-export-svg" class="btn-sm" title="Export as SVG image">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -183,8 +199,15 @@ export class XmlChartView {
     });
 
     this.container.querySelector('#btn-zoom-fit').addEventListener('click', () => {
-      this.fitToView();
+      this.fitToView(true);
     });
+
+    const btnChartFit = this.container.querySelector('#btn-chart-fit');
+    if (btnChartFit) {
+      btnChartFit.addEventListener('click', () => {
+        this.fitToView(true);
+      });
+    }
 
     this.container.querySelector('#btn-chart-expand-all').addEventListener('click', () => {
       this.collapsedNodeIds.clear();
@@ -824,17 +847,57 @@ export class XmlChartView {
     }
   }
 
-  fitToView() {
-    if (this.activeChartType === 'card-flow') {
-      this.panX = 60;
-      this.panY = 60;
-      this.scale = 0.95;
-    } else {
-      this.panX = 140;
-      this.panY = 120;
-      this.scale = 1.0;
+  fitToView(showNotice = false) {
+    let fitted = false;
+
+    try {
+      if (this.viewportGroup && typeof this.viewportGroup.getBBox === 'function') {
+        const bbox = this.viewportGroup.getBBox();
+        const containerWidth = this.canvasWrap?.clientWidth || this.svgRoot?.clientWidth || 0;
+        const containerHeight = this.canvasWrap?.clientHeight || this.svgRoot?.clientHeight || 0;
+
+        if (bbox.width > 0 && bbox.height > 0 && containerWidth > 80 && containerHeight > 80) {
+          const padding = 50;
+          const availWidth = Math.max(50, containerWidth - padding * 2);
+          const availHeight = Math.max(50, containerHeight - padding * 2);
+
+          const scaleX = availWidth / bbox.width;
+          const scaleY = availHeight / bbox.height;
+
+          // Comfortable scale range: not over-enlarging small trees, scaling down wide ones
+          const targetScale = Math.min(Math.max(0.15, Math.min(scaleX, scaleY)), 1.15);
+
+          // Center the bounding box within the container
+          const targetPanX = (containerWidth - bbox.width * targetScale) / 2 - bbox.x * targetScale;
+          const targetPanY = (containerHeight - bbox.height * targetScale) / 2 - bbox.y * targetScale;
+
+          this.scale = targetScale;
+          this.panX = targetPanX;
+          this.panY = targetPanY;
+          this.updateViewportTransform();
+          fitted = true;
+        }
+      }
+    } catch (_) {
+      fitted = false;
     }
-    this.updateViewportTransform();
+
+    if (!fitted) {
+      if (this.activeChartType === 'card-flow') {
+        this.panX = 60;
+        this.panY = 60;
+        this.scale = 0.95;
+      } else {
+        this.panX = 140;
+        this.panY = 120;
+        this.scale = 1.0;
+      }
+      this.updateViewportTransform();
+    }
+
+    if (showNotice) {
+      showToast('Chart fitted to screen', 'info');
+    }
   }
 
   renderFrequencyBarChart(tags) {
@@ -908,21 +971,39 @@ export class XmlChartView {
   }
 
   exportSvg() {
-    const svgClone = this.svgRoot.cloneNode(true);
-    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    svgClone.style.backgroundColor = this.activeChartType === 'card-flow' ? '#000000' : '#0b0f19';
+    try {
+      const svgClone = this.svgRoot.cloneNode(true);
+      svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      svgClone.style.backgroundColor = this.activeChartType === 'card-flow' ? '#000000' : '#0b0f19';
 
-    const serializer = new XMLSerializer();
-    const svgStr = serializer.serializeToString(svgClone);
-    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
+      if (this.viewportGroup && typeof this.viewportGroup.getBBox === 'function') {
+        const bbox = this.viewportGroup.getBBox();
+        if (bbox.width > 0 && bbox.height > 0) {
+          const pad = 36;
+          const cloneViewport = svgClone.querySelector('#tree-viewport');
+          if (cloneViewport) {
+            cloneViewport.removeAttribute('transform');
+          }
+          svgClone.setAttribute('viewBox', `${Math.round(bbox.x - pad)} ${Math.round(bbox.y - pad)} ${Math.round(bbox.width + pad * 2)} ${Math.round(bbox.height + pad * 2)}`);
+          svgClone.setAttribute('width', `${Math.round(bbox.width + pad * 2)}`);
+          svgClone.setAttribute('height', `${Math.round(bbox.height + pad * 2)}`);
+        }
+      }
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `xml-chart-${this.activeChartType}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Chart exported as SVG', 'success');
+      const serializer = new XMLSerializer();
+      const svgStr = serializer.serializeToString(svgClone);
+      const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `xml-chart-${this.activeChartType}.svg`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Chart exported as SVG', 'success');
+    } catch (err) {
+      showToast(`Export failed: ${err.message}`, 'error');
+    }
   }
 }
 

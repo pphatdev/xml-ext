@@ -26,6 +26,12 @@
   gap: 0.3rem;
 }
 
+.chart-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .chart-container {
   flex: 1;
   overflow: hidden;
