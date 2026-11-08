@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — XML Pro Toolkit</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/docs.css" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+</head>
+<body class="docs-body">
+  <!-- Header -->
+  <header class="docs-header">
+    <div class="docs-header-left">
+      <a href="index.html" class="btn-back-studio" title="Return to XML Studio Workbench">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+        </svg>
+        Back to Studio
+      </a>
+      <div class="toolbar-divider" style="height: 18px;"></div>
+      <div class="brand-group">
+        <div class="brand-icon" style="width: 26px; height: 26px;">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="brand-name" style="font-size: 1rem;">XML Pro Docs</span>
+      </div>
+    </div>
+
+    <div class="docs-header-right">
+      <button type="button" id="btn-upload-md" class="btn-secondary btn-sm" title="Upload a Markdown file from docs folder or disk">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+        Upload .md
+      </button>
+
+      <button type="button" id="btn-open-post-modal" class="btn-primary btn-sm" title="Write or post a Markdown document">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        Post Doc
+      </button>
+
+      <input type="file" id="md-file-input" class="hidden" accept=".md,.markdown,.txt" />
+
+      <button type="button" id="btn-theme-toggle" class="btn-icon theme-toggle-btn" title="Toggle Theme">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Docs 3-Column Layout -->
+  <div class="docs-layout">
+    <!-- Left Navigation Sidebar -->
+    <aside class="docs-nav-sidebar">
+      <div class="docs-search-wrap">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+        </svg>
+        <input type="text" id="docs-search-input" class="docs-search-input" placeholder="Search documentation..." />
+      </div>
+
+      <nav id="docs-nav-list" class="docs-nav-actions"></nav>
+    </aside>
+
+    <!-- Center Reading Pane -->
+    <main class="docs-content-pane" id="docs-content-pane"></main>
+
+    <!-- Right Table of Contents Sidebar -->
+    <aside class="docs-toc-sidebar">
+      <div class="toc-title">On this page</div>
+      <nav id="docs-toc-list" class="toc-list"></nav>
+    </aside>
+  </div>
+
+  <!-- Post Markdown Modal -->
+  <div id="post-doc-modal" class="modal-backdrop hidden">
+    <div class="modal-dialog post-modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h2 class="modal-title">Post Markdown Document</h2>
+          <p class="modal-subtitle">Upload any .md file from the docs folder or write custom documentation</p>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-post-modal" title="Close">
+          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-tabs">
+        <button type="button" class="tab-btn active" data-tab="edit">Write / Edit</button>
+        <button type="button" class="tab-btn" data-tab="preview">Live Preview</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Drag & Drop Zone -->
+        <div class="drop-zone" id="post-drop-zone">
+          <svg class="drop-zone-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+          </svg>
+          <div class="drop-zone-text">
+            <strong>Click to select</strong> or drag and drop a <code>.md</code> file from the <code>docs/</code> folder
+          </div>
+        </div>
+
+        <div id="post-pane-edit" class="tab-pane active">
+          <div class="form-row">
+            <div class="form-group col" style="flex: 2;">
+              <label class="form-label" for="post-title-input">Document Title</label>
+              <input type="text" id="post-title-input" class="form-control" placeholder="e.g. XPath Guide, Custom XML Schema..." />
+            </div>
+            <div class="form-group col" style="flex: 1;">
+              <label class="form-label" for="post-category-input">Category</label>
+              <input type="text" id="post-category-input" class="form-control" value="Custom Docs" placeholder="Category" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="post-content-input">Markdown Content</label>
+            <textarea id="post-content-input" class="form-control font-mono" rows="11" placeholder="# Document Heading&#10;&#10;Write your markdown documentation here...&#10;&#10;## Subheading&#10;- Feature 1&#10;- Feature 2&#10;&#10;```xml&#10;<example>value</example>&#10;```"></textarea>
+          </div>
+        </div>
+
+        <div id="post-pane-preview" class="tab-pane hidden">
+          <div id="post-preview-container" class="markdown-body" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-input); min-height: 250px;"></div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('post-doc-modal').classList.add('hidden')">Cancel</button>
+          <button type="button" id="btn-submit-post-doc" class="btn-primary">Post Document</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/docs/docs-app.js"></script>
+</body>
+</html>

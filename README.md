@@ -37,6 +37,10 @@ A fast, comprehensive, client-side **XML Extension & Workbench** built with mode
 - **Validate**:
   - Instant W3C well-formedness validation.
   - Dynamic status badge in the header displaying error count or root element details.
+- **Documentation Portal (`docs.html`)**:
+  - Full documentation library with articles stored in the `docs/` folder (`getting-started.md`, `features.md`, `sitemap-guide.md`, `converters.md`, `keyboard-shortcuts.md`).
+  - **Post Markdown**: Allows users to upload any `.md` file from the `docs/` folder or their computer, or write custom Markdown directly with live preview and save it to their persistent document collection.
+  - Table of Contents sidebar with smooth anchor jumping and copyable code blocks.
 - **Convert**:
   - Bidirectional and multi-target conversions:
     - **XML ↔ JSON**: Clean/Standard object mapping or Detailed Badgerfish-style mode.

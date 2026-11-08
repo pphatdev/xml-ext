@@ -35,6 +35,12 @@
     "sidePanel",
     "contextMenus",
     "activeTab"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["docs/*", "docs.html"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }
 

@@ -16,6 +16,12 @@ chrome.runtime.onInstalled.addListener(() => {
       title: 'Inspect XML in Side Panel',
       contexts: ['selection']
     });
+
+    chrome.contextMenus.create({
+      id: 'open-xml-docs',
+      title: 'Open XML Documentation',
+      contexts: ['action']
+    });
   }
 });
 
@@ -23,6 +29,8 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'open-xml-studio') {
     chrome.tabs.create({ url: 'index.html' });
+  } else if (info.menuItemId === 'open-xml-docs') {
+    chrome.tabs.create({ url: 'docs.html' });
   } else if (info.menuItemId === 'open-xml-sidepanel') {
     if (chrome.sidePanel && tab?.id) {
       chrome.sidePanel.open({ tabId: tab.id });
