@@ -69,19 +69,37 @@ export function parseMarkdown(mdString) {
       } else {
         inCodeBlock = false;
         const codeContent = codeBuffer.join('\n');
+        const linesCount = Math.max(1, codeBuffer.length);
+        const lineNumbersHtml = Array.from({ length: linesCount }, (_, idx) => `<span>${idx + 1}</span>`).join('');
+        const highlighted = highlightCode(codeContent, codeLang);
+
         output.push(`
           <div class="code-block-wrap">
             <div class="code-block-header">
-              <span class="code-lang">${escapeHtml(codeLang || 'text')}</span>
+              <div class="code-window-controls" aria-hidden="true">
+                <span class="code-dot dot-red"></span>
+                <span class="code-dot dot-yellow"></span>
+                <span class="code-dot dot-green"></span>
+              </div>
+              <div class="code-header-badge">
+                <span class="code-lang">${escapeHtml(codeLang || 'text')}</span>
+                <span class="code-line-count">${linesCount} ${linesCount === 1 ? 'line' : 'lines'}</span>
+              </div>
               <button type="button" class="btn-copy-code" title="Copy code" data-code="${escapeHtml(codeContent)}">
-                <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <svg class="icon-sm icon-copy" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
                   <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
                 </svg>
-                Copy
+                <svg class="icon-sm icon-check hidden" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                <span class="copy-label">Copy</span>
               </button>
             </div>
-            <pre><code class="language-${escapeHtml(codeLang)}">${escapeHtml(codeContent)}</code></pre>
+            <div class="code-body-wrapper">
+              <div class="code-line-numbers" aria-hidden="true">${lineNumbersHtml}</div>
+              <pre><code class="language-${escapeHtml(codeLang || 'text')}">${highlighted}</code></pre>
+            </div>
           </div>
         `);
       }
@@ -241,4 +259,149 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+/**
+ * Universal Syntax Highlighter for Blog Code Themes
+ * Supports XML/HTML/SVG, JSON, Bash/Shell, JavaScript/TypeScript, and YAML.
+ */
+export function highlightCode(code, lang = '') {
+  if (!code) return '';
+  const l = (lang || '').toLowerCase().trim();
+
+  let effectiveLang = l;
+  if (!effectiveLang || effectiveLang === 'text' || effectiveLang === 'plain') {
+    const trimmed = code.trim();
+    if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
+      effectiveLang = 'xml';
+    } else if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      effectiveLang = 'json';
+    } else if (trimmed.startsWith('$ ') || trimmed.startsWith('#!')) {
+      effectiveLang = 'bash';
+    }
+  }
+
+  if (effectiveLang === 'xml' || effectiveLang === 'html' || effectiveLang === 'svg' || effectiveLang === 'rss' || effectiveLang === 'atom' || effectiveLang === 'xhtml') {
+    return highlightXml(code);
+  }
+  if (effectiveLang === 'json' || effectiveLang === 'json5' || effectiveLang === 'jsonc') {
+    return highlightJson(code);
+  }
+  if (effectiveLang === 'bash' || effectiveLang === 'sh' || effectiveLang === 'shell' || effectiveLang === 'zsh') {
+    return highlightBash(code);
+  }
+  if (effectiveLang === 'js' || effectiveLang === 'javascript' || effectiveLang === 'ts' || effectiveLang === 'typescript') {
+    return highlightJs(code);
+  }
+  if (effectiveLang === 'yaml' || effectiveLang === 'yml') {
+    return highlightYaml(code);
+  }
+
+  return escapeHtml(code);
+}
+
+function highlightXml(code) {
+  const escaped = escapeHtml(code);
+
+  const comments = [];
+  let s = escaped.replace(/&lt;!--[\s\S]*?--&gt;/g, (m) => {
+    comments.push(`<span class="token-comment">${m}</span>`);
+    return `___XML_COMMENT_${comments.length - 1}___`;
+  });
+
+  const cdatas = [];
+  s = s.replace(/&lt;!\[CDATA\[[\s\S]*?\]\]&gt;/g, (m) => {
+    cdatas.push(`<span class="token-cdata">${m}</span>`);
+    return `___XML_CDATA_${cdatas.length - 1}___`;
+  });
+
+  // XML declaration
+  s = s.replace(/&lt;\?xml([\s\S]*?)\?&gt;/g, (_m, attrs) => {
+    const highlightedAttrs = attrs.replace(/([a-zA-Z0-9_:\.-]+)(\s*=\s*)(&quot;.*?&quot;|&apos;.*?&apos;)/g,
+      `<span class="token-attr">$1</span>$2<span class="token-string">$3</span>`
+    );
+    return `<span class="token-meta">&lt;?xml${highlightedAttrs}?&gt;</span>`;
+  });
+
+  // Tags
+  s = s.replace(/&lt;(\/?[a-zA-Z0-9_:\.-]+)([\s\S]*?)(\/?)&gt;/g, (_match, tagName, attrs, selfClose) => {
+    if (!attrs.trim()) {
+      return `<span class="token-tag">&lt;${tagName}${selfClose ? '/' : ''}&gt;</span>`;
+    }
+    const highlightedAttrs = attrs.replace(/([a-zA-Z0-9_:\.-]+)(\s*=\s*)(&quot;.*?&quot;|&apos;.*?&apos;)|([a-zA-Z0-9_:\.-]+)/g, (_m, aName, eq, val, booleanAttr) => {
+      if (booleanAttr) return `<span class="token-attr">${booleanAttr}</span>`;
+      return `<span class="token-attr">${aName}</span>${eq}<span class="token-string">${val}</span>`;
+    });
+    return `<span class="token-tag">&lt;${tagName}</span>${highlightedAttrs}<span class="token-tag">${selfClose ? '/' : ''}&gt;</span>`;
+  });
+
+  s = s.replace(/___XML_CDATA_(\d+)___/g, (_, i) => cdatas[i]);
+  s = s.replace(/___XML_COMMENT_(\d+)___/g, (_, i) => comments[i]);
+
+  return s;
+}
+
+function highlightJson(code) {
+  const escaped = escapeHtml(code);
+  return escaped.replace(/(&quot;(?:(?!&quot;).)*&quot;(\s*:)?|\b(true|false|null)\b|-?\b\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?\b)/g, (match) => {
+    if (match.endsWith(':')) {
+      const key = match.slice(0, -1);
+      return `<span class="token-property">${key}</span>:`;
+    }
+    if (match.startsWith('&quot;')) {
+      return `<span class="token-string">${match}</span>`;
+    }
+    if (match === 'true' || match === 'false') {
+      return `<span class="token-boolean">${match}</span>`;
+    }
+    if (match === 'null') {
+      return `<span class="token-null">${match}</span>`;
+    }
+    return `<span class="token-number">${match}</span>`;
+  });
+}
+
+function highlightBash(code) {
+  return code.split('\n').map(line => {
+    if (/^\s*#/.test(line)) {
+      return `<span class="token-comment">${escapeHtml(line)}</span>`;
+    }
+    let l = escapeHtml(line);
+    l = l.replace(/^(\s*[$#]\s+)/, `<span class="token-prompt">$1</span>`);
+    l = l.replace(/(^|[\s>|&;])(\b(?:deno|python3|python|node|npm|npx|git|curl|wget|cat|echo|mkdir|cd|rm|cp|mv|chmod|tar|docker|bash|sh)\b)/g,
+      `$1<span class="token-command">$2</span>`
+    );
+    l = l.replace(/(\s)(--?[a-zA-Z0-9_-]+)/g, `$1<span class="token-flag">$2</span>`);
+    l = l.replace(/(&quot;.*?&quot;|&apos;.*?&apos;)/g, `<span class="token-string">$1</span>`);
+    return l;
+  }).join('\n');
+}
+
+function highlightJs(code) {
+  return code.split('\n').map(line => {
+    if (/^\s*\/\//.test(line)) {
+      return `<span class="token-comment">${escapeHtml(line)}</span>`;
+    }
+    let l = escapeHtml(line);
+    l = l.replace(/\b(import|export|from|const|let|var|function|return|if|else|for|while|class|extends|new|try|catch|finally|async|await|default|typeof)\b/g,
+      `<span class="token-keyword">$1</span>`
+    );
+    l = l.replace(/(&quot;.*?&quot;|&apos;.*?&apos;|`.*?`)/g, `<span class="token-string">$1</span>`);
+    l = l.replace(/\b(\d+(?:\.\d+)?)\b/g, `<span class="token-number">$1</span>`);
+    return l;
+  }).join('\n');
+}
+
+function highlightYaml(code) {
+  return code.split('\n').map(line => {
+    if (/^\s*#/.test(line)) {
+      return `<span class="token-comment">${escapeHtml(line)}</span>`;
+    }
+    let l = escapeHtml(line);
+    l = l.replace(/^(\s*)([a-zA-Z0-9_-]+)(:)/, `$1<span class="token-property">$2</span>$3`);
+    l = l.replace(/(&quot;.*?&quot;|&apos;.*?&apos;)/g, `<span class="token-string">$1</span>`);
+    l = l.replace(/:\s*(true|false)\b/g, `: <span class="token-boolean">$1</span>`);
+    l = l.replace(/:\s*(\d+(?:\.\d+)?)\b/g, `: <span class="token-number">$1</span>`);
+    return l;
+  }).join('\n');
 }

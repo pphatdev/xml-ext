@@ -19,14 +19,40 @@ Deno.test('Parse markdown headings and list', () => {
 
 Deno.test('Parse markdown code blocks', () => {
   const md = `\`\`\`xml
-<root>
+<root id="1">
   <item>Value</item>
 </root>
 \`\`\``;
 
   const result = parseMarkdown(md);
   assert(result.html.includes('class="code-block-wrap"'));
-  assert(result.html.includes('&lt;root&gt;'));
+  assert(result.html.includes('class="code-window-controls"'));
+  assert(result.html.includes('class="code-dot dot-red"'));
+  assert(result.html.includes('class="code-line-numbers"'));
+  assert(result.html.includes('&lt;root'));
+  assert(result.html.includes('class="token-tag"'));
+  assert(result.html.includes('class="token-attr"'));
+});
+
+Deno.test('Parse markdown code blocks for JSON and Bash', () => {
+  const jsonMd = `\`\`\`json
+{
+  "name": "xml-ext",
+  "active": true
+}
+\`\`\``;
+  const jsonResult = parseMarkdown(jsonMd);
+  assert(jsonResult.html.includes('class="token-property"'));
+  assert(jsonResult.html.includes('class="token-boolean"'));
+
+  const bashMd = `\`\`\`bash
+# Run server
+deno task dev --port 3000
+\`\`\``;
+  const bashResult = parseMarkdown(bashMd);
+  assert(bashResult.html.includes('class="token-comment"'));
+  assert(bashResult.html.includes('class="token-command"'));
+  assert(bashResult.html.includes('class="token-flag"'));
 });
 
 Deno.test('Parse markdown tables', () => {

@@ -100,6 +100,7 @@ export class DocsApp {
         if (isPreview) {
           const parsed = parseMarkdown(mdContentInput.value);
           previewContainer.innerHTML = parsed.html || '<p class="text-muted">No content to preview.</p>';
+          this.bindCopyButtons(previewContainer);
         }
       });
     });
@@ -253,17 +254,8 @@ export class DocsApp {
       </article>
     `;
 
-    // Bind Copy Code buttons
-    const copyBtns = this.contentPane.querySelectorAll('.btn-copy-code');
-    for (const btn of copyBtns) {
-      btn.addEventListener('click', () => {
-        const code = btn.dataset.code;
-        if (code) {
-          navigator.clipboard.writeText(code);
-          showToast('Code copied to clipboard', 'success');
-        }
-      });
-    }
+    // Bind Copy Code buttons with blog-grade feedback
+    this.bindCopyButtons(this.contentPane);
 
     // Bind Download .md
     document.getElementById('btn-download-md').addEventListener('click', () => {
@@ -290,6 +282,52 @@ export class DocsApp {
 
     // Scroll content pane to top
     this.contentPane.scrollTop = 0;
+  }
+
+  bindCopyButtons(container) {
+    if (!container) return;
+    const copyBtns = container.querySelectorAll('.btn-copy-code');
+    for (const btn of copyBtns) {
+      if (btn.dataset.bound) continue;
+      btn.dataset.bound = 'true';
+      btn.addEventListener('click', async () => {
+        const code = btn.dataset.code;
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code);
+        } catch (_) {
+          const temp = document.createElement('textarea');
+          temp.value = code;
+          temp.style.position = 'fixed';
+          temp.style.opacity = '0';
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+        }
+
+        const iconCopy = btn.querySelector('.icon-copy');
+        const iconCheck = btn.querySelector('.icon-check');
+        const label = btn.querySelector('.copy-label');
+
+        if (iconCopy && iconCheck) {
+          iconCopy.classList.add('hidden');
+          iconCheck.classList.remove('hidden');
+          if (label) label.textContent = 'Copied!';
+          btn.classList.add('copied');
+
+          setTimeout(() => {
+            iconCopy.classList.remove('hidden');
+            iconCheck.classList.add('hidden');
+            if (label) label.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        }
+
+        showToast('Code copied to clipboard', 'success');
+      });
+    }
   }
 
   renderTableOfContents(headings) {

@@ -14,6 +14,32 @@ Transforms XML into natural JavaScript objects:
 - Attributes are prefixed with `@` (e.g. `"@id": "101"`).
 - Simple leaf elements with only text become primitive values (numbers, booleans, strings).
 
+```xml
+<catalog id="cat1">
+  <book category="fiction">
+    <title>The Great Gatsby</title>
+    <price>12.99</price>
+    <available>true</available>
+  </book>
+</catalog>
+```
+
+Converted to Standard JSON:
+
+```json
+{
+  "catalog": {
+    "@id": "cat1",
+    "book": {
+      "@category": "fiction",
+      "title": "The Great Gatsby",
+      "price": 12.99,
+      "available": true
+    }
+  }
+}
+```
+
 ### Detailed (Badgerfish) Mode
 Preserves complete structural fidelity:
 - All element attributes are grouped in `@attributes`.
@@ -27,11 +53,24 @@ Preserves complete structural fidelity:
 - **Structured Outline**: Converts the hierarchy into an indented plain text tree showing element tags, attributes, and text values.
 - **Raw Text Only**: Extracts all text node contents in sequence, stripped of all markup tags.
 
+```text
+catalog [@id="cat1"]
+  book [@category="fiction"]
+    title: The Great Gatsby
+    price: 12.99
+    available: true
+```
+
 ---
 
 ## 3. XML to CSV / TSV
 
 Detects repeating sibling structures (such as `<book>`, `<item>`, `<user>`, `<record>`) and automatically extracts their attributes and child values into clean tabular CSV or tab-separated TSV format.
+
+```csv
+@category,title,price,available
+fiction,The Great Gatsby,12.99,true
+```
 
 ---
 
@@ -39,8 +78,38 @@ Detects repeating sibling structures (such as `<book>`, `<item>`, `<user>`, `<re
 
 Converts the clean object model into human-readable YAML format with proper indentation, ideal for configuration files.
 
+```yaml
+catalog:
+  '@id': cat1
+  book:
+    '@category': fiction
+    title: The Great Gatsby
+    price: 12.99
+    available: true
+```
+
 ---
 
 ## 5. JSON to XML (Reverse Conversion)
 
 Paste any JSON object or array into the converter to generate valid XML with customizable root tag names.
+
+```json
+{
+  "project": {
+    "name": "xml-ext",
+    "version": "1.0.0",
+    "private": true
+  }
+}
+```
+
+Generated XML output:
+
+```xml
+<project>
+  <name>xml-ext</name>
+  <version>1.0.0</version>
+  <private>true</private>
+</project>
+```

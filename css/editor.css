@@ -9,6 +9,57 @@
   width: 100%;
   background-color: var(--bg-input);
   position: relative;
+  transition: background-color 0.2s ease;
+}
+
+/* Code theme integration for Editor & Studio */
+[data-code-theme="blog"] .editor-wrapper {
+  background-color: var(--code-bg, #0b0f19);
+}
+[data-code-theme="blog"] .editor-gutter {
+  background-color: var(--code-header-bg, #111726);
+  border-right-color: var(--code-gutter-border, rgba(255, 255, 255, 0.08));
+  color: var(--code-gutter-color, #64748b);
+}
+
+[data-code-theme="dracula"] .editor-wrapper {
+  background-color: #282a36;
+}
+[data-code-theme="dracula"] .editor-gutter {
+  background-color: #21222c;
+  color: #6272a4;
+}
+
+[data-code-theme="onedark"] .editor-wrapper {
+  background-color: #21252b;
+}
+[data-code-theme="onedark"] .editor-gutter {
+  background-color: #282c34;
+  color: #5c6370;
+}
+
+[data-code-theme="monokai"] .editor-wrapper {
+  background-color: #272822;
+}
+[data-code-theme="monokai"] .editor-gutter {
+  background-color: #1e1f1c;
+  color: #75715e;
+}
+
+[data-code-theme="github"] .editor-wrapper {
+  background-color: #0d1117;
+}
+[data-code-theme="github"] .editor-gutter {
+  background-color: #161b22;
+  color: #6e7681;
+}
+
+[data-theme="light"][data-code-theme="github"] .editor-wrapper {
+  background-color: #f6f8fa;
+}
+[data-theme="light"][data-code-theme="github"] .editor-gutter {
+  background-color: #eaeef2;
+  color: #8c959f;
 }
 
 /* Find and Replace Bar */

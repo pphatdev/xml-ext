@@ -69,9 +69,21 @@ export class XmlChartView {
               <g id="tree-viewport"></g>
             </svg>
             <div class="chart-overlay-controls">
-              <button type="button" id="btn-zoom-in" class="chart-ctrl-btn" title="Zoom In">+</button>
-              <button type="button" id="btn-zoom-out" class="chart-ctrl-btn" title="Zoom Out">−</button>
-              <button type="button" id="btn-zoom-fit" class="chart-ctrl-btn" title="Fit to View">⤢</button>
+              <button type="button" id="btn-zoom-in" class="chart-ctrl-btn" title="Zoom In">
+                <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              <button type="button" id="btn-zoom-out" class="chart-ctrl-btn" title="Zoom Out">
+                <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              <button type="button" id="btn-zoom-fit" class="chart-ctrl-btn" title="Fit to View">
+                <svg class="icon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7V3h4m10 4V3h-4M3 13v4h4m10-4v4h-4"/>
+                </svg>
+              </button>
             </div>
             <div id="chart-tooltip" class="chart-tooltip hidden"></div>
           </div>

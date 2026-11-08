@@ -191,6 +191,40 @@ body {
   gap: 0.5rem;
 }
 
+/* Code Theme Selector Pill */
+.code-theme-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.code-theme-picker:hover {
+  border-color: var(--border-light);
+  color: var(--text-normal);
+}
+
+.code-theme-select {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+}
+
+.code-theme-select option {
+  background-color: var(--bg-secondary);
+  color: var(--text-normal);
+}
+
 /* Primary Action Toolbar */
 .action-toolbar {
   background-color: var(--bg-secondary);
