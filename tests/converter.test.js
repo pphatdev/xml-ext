@@ -12,6 +12,11 @@ import {
   yamlToJson,
   yamlToXml,
   txtToXml,
+  xmlToToml,
+  tomlToJson,
+  tomlToXml,
+  xmlToMarkdown,
+  markdownToXml,
   detectFormat
 } from '../src/core/converter.js';
 
@@ -180,7 +185,35 @@ Deno.test('Auto-detect data formats', () => {
   assertEquals(detectFormat('[1, 2, 3]'), 'json');
   assertEquals(detectFormat('name,age\nAlice,30\nBob,25'), 'csv');
   assertEquals(detectFormat('title: Hello\nauthor: Antigravity'), 'yaml');
+  assertEquals(detectFormat('[package]\nname = "my-crate"'), 'toml');
+  assertEquals(detectFormat('# Project Overview\n\n- Item 1\n- Item 2'), 'markdown');
   assertEquals(detectFormat('Just plain unstructured sentences.'), 'txt');
+});
+
+Deno.test('XML to TOML conversion', () => {
+  const xml = `<server><host>127.0.0.1</host><port>8000</port><enabled>true</enabled></server>`;
+  const toml = xmlToToml(xml);
+  assert(toml.includes('host = "127.0.0.1"'));
+  assert(toml.includes('port = 8000'));
+  assert(toml.includes('enabled = true'));
+
+  const parsed = tomlToJson(toml);
+  assertEquals(parsed.host, '127.0.0.1');
+  assertEquals(parsed.port, 8000);
+  assertEquals(parsed.enabled, true);
+
+  const backXml = tomlToXml(toml, { rootTag: 'server' });
+  assert(backXml.includes('<server>'));
+  assert(backXml.includes('<host>127.0.0.1</host>'));
+});
+
+Deno.test('XML to Markdown and back conversion', () => {
+  const xml = `<catalog><book><title>Dune</title><author>Frank Herbert</author></book><book><title>Neuromancer</title><author>William Gibson</author></book></catalog>`;
+  const md = xmlToMarkdown(xml);
+  assert(md.includes('| title | author |') || md.includes('title') || md.includes('Dune'));
+
+  const backXml = markdownToXml(md);
+  assert(backXml.includes('<document>') || backXml.includes('Dune'));
 });
 
 Deno.test('Multi-format roundtrips: XML to YAML and back', () => {

@@ -27,6 +27,10 @@ import {
   csvToXml,
   xmlToTxt,
   txtToXml,
+  xmlToToml,
+  tomlToXml,
+  xmlToMarkdown,
+  markdownToXml,
   detectFormat
 } from './core/converter.js';
 
@@ -354,6 +358,10 @@ export class App {
         return csvToXml(content, { rootTag: 'records', rowTag: 'row' });
       case 'txt':
         return txtToXml(content, { rootTag: 'document', lineTag: 'line' });
+      case 'toml':
+        return tomlToXml(content, { rootTag: 'config' });
+      case 'markdown':
+        return markdownToXml(content, { rootTag: 'document' });
       default:
         return content;
     }
@@ -375,6 +383,10 @@ export class App {
         return xmlToCsv(xml);
       case 'txt':
         return xmlToTxt(xml);
+      case 'toml':
+        return xmlToToml(xml);
+      case 'markdown':
+        return xmlToMarkdown(xml);
       default:
         return xml;
     }
@@ -495,6 +507,8 @@ export class App {
   switchView(viewName) {
     this.activeView = viewName;
 
+    const isFormatPreview = ['json', 'xml', 'csv', 'yaml', 'markdown', 'toml', 'txt', 'converter'].includes(viewName);
+
     // View panels
     const viewContainers = {
       tree: document.getElementById('tree-view-container'),
@@ -506,8 +520,16 @@ export class App {
 
     for (const [key, el] of Object.entries(viewContainers)) {
       if (el) {
-        el.classList.toggle('hidden', key !== viewName);
+        if (key === 'converter') {
+          el.classList.toggle('hidden', !isFormatPreview);
+        } else {
+          el.classList.toggle('hidden', key !== viewName);
+        }
       }
+    }
+
+    if (isFormatPreview && viewName !== 'converter') {
+      this.converterView.setTarget(viewName);
     }
 
     const xml = this.getContentAsXml(this.editor.getValue());
@@ -523,7 +545,10 @@ export class App {
       this.linterView.lint(xml);
     } else if (this.activeView === 'analyzer') {
       this.analyzerView.analyze(xml);
-    } else if (this.activeView === 'converter') {
+    } else if (['json', 'xml', 'csv', 'yaml', 'markdown', 'toml', 'txt', 'converter'].includes(this.activeView)) {
+      if (this.activeView !== 'converter') {
+        this.converterView.setTarget(this.activeView);
+      }
       this.converterView.loadXml(xml);
     }
   }

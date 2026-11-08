@@ -917,9 +917,441 @@ export function txtToXml(txtString, options = {}) {
 }
 
 /**
- * Auto-detects data format: 'xml' | 'json' | 'yaml' | 'csv' | 'txt'
+ * Converts XML to TOML string representation
+ * @param {string} xmlString
+ * @param {object} [options]
+ * @returns {string} TOML string
+ */
+export function xmlToToml(xmlString, options = {}) {
+  const json = xmlToJson(xmlString, { mode: 'clean', parsePrimitives: true });
+  if (!json || typeof json !== 'object') return '';
+  return jsonToToml(json, options);
+}
+
+/**
+ * Converts a JavaScript object to TOML format
+ * @param {object} obj
+ * @param {object} [options]
+ * @returns {string} TOML string
+ */
+export function jsonToToml(obj, options = {}) {
+  if (!obj || typeof obj !== 'object') return '';
+
+  const keys = Object.keys(obj);
+  let targetObj = obj;
+  if (keys.length === 1 && typeof obj[keys[0]] === 'object' && obj[keys[0]] !== null && !Array.isArray(obj[keys[0]])) {
+    targetObj = obj[keys[0]];
+  }
+
+  const lines = [];
+
+  function formatValue(val) {
+    if (typeof val === 'string') {
+      return JSON.stringify(val);
+    }
+    if (typeof val === 'number' || typeof val === 'boolean') {
+      return String(val);
+    }
+    if (val === null || val === undefined) {
+      return '""';
+    }
+    if (Array.isArray(val)) {
+      if (val.length === 0) return '[]';
+      if (typeof val[0] !== 'object' || val[0] === null) {
+        return `[ ${val.map(formatValue).join(', ')} ]`;
+      }
+    }
+    return JSON.stringify(val);
+  }
+
+  // Pass 1: Primitives and flat arrays
+  for (const [k, v] of Object.entries(targetObj)) {
+    if (v === null || typeof v !== 'object') {
+      const cleanKey = /^[a-zA-Z0-9_\-]+$/.test(k) ? k : JSON.stringify(k);
+      lines.push(`${cleanKey} = ${formatValue(v)}`);
+    } else if (Array.isArray(v) && (v.length === 0 || typeof v[0] !== 'object')) {
+      const cleanKey = /^[a-zA-Z0-9_\-]+$/.test(k) ? k : JSON.stringify(k);
+      lines.push(`${cleanKey} = ${formatValue(v)}`);
+    }
+  }
+
+  // Pass 2: Nested tables
+  function renderTables(parentKey, o) {
+    for (const [k, v] of Object.entries(o)) {
+      const fullKey = parentKey ? `${parentKey}.${k}` : k;
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        if (lines.length > 0) lines.push('');
+        lines.push(`[${fullKey}]`);
+        for (const [subK, subV] of Object.entries(v)) {
+          if (subV === null || typeof subV !== 'object' || (Array.isArray(subV) && (subV.length === 0 || typeof subV[0] !== 'object'))) {
+            const cleanKey = /^[a-zA-Z0-9_\-]+$/.test(subK) ? subK : JSON.stringify(subK);
+            lines.push(`${cleanKey} = ${formatValue(subV)}`);
+          }
+        }
+        for (const [subK, subV] of Object.entries(v)) {
+          if (subV && typeof subV === 'object') {
+            if (Array.isArray(subV)) {
+              if (subV.length > 0 && typeof subV[0] === 'object') {
+                renderArrayOfTables(`${fullKey}.${subK}`, subV);
+              }
+            } else {
+              renderTables(fullKey, { [subK]: subV });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function renderArrayOfTables(key, arr) {
+    for (const item of arr) {
+      if (typeof item === 'object' && item !== null) {
+        if (lines.length > 0) lines.push('');
+        lines.push(`[[${key}]]`);
+        for (const [k, v] of Object.entries(item)) {
+          if (v === null || typeof v !== 'object' || (Array.isArray(v) && (v.length === 0 || typeof v[0] !== 'object'))) {
+            const cleanKey = /^[a-zA-Z0-9_\-]+$/.test(k) ? k : JSON.stringify(k);
+            lines.push(`${cleanKey} = ${formatValue(v)}`);
+          }
+        }
+        for (const [k, v] of Object.entries(item)) {
+          if (v && typeof v === 'object') {
+            if (Array.isArray(v)) {
+              if (v.length > 0 && typeof v[0] === 'object') {
+                renderArrayOfTables(`${key}.${k}`, v);
+              }
+            } else {
+              renderTables(key, { [k]: v });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (const [k, v] of Object.entries(targetObj)) {
+    if (v && typeof v === 'object') {
+      if (Array.isArray(v)) {
+        if (v.length > 0 && typeof v[0] === 'object') {
+          renderArrayOfTables(k, v);
+        }
+      } else {
+        renderTables('', { [k]: v });
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Parses TOML into a JavaScript Object
+ * @param {string} tomlString
+ * @returns {object}
+ */
+export function tomlToJson(tomlString) {
+  if (!tomlString || !tomlString.trim()) return {};
+
+  const lines = tomlString.split(/\r?\n/);
+  const root = {};
+  let currentObj = root;
+
+  for (let line of lines) {
+    line = line.trim();
+    if (!line || line.startsWith('#')) continue;
+
+    const commentIdx = line.indexOf('#');
+    if (commentIdx !== -1) {
+      const pre = line.slice(0, commentIdx);
+      const quoteCount = (pre.match(/"/g) || []).length;
+      if (quoteCount % 2 === 0) {
+        line = pre.trim();
+      }
+    }
+    if (!line) continue;
+
+    if (line.startsWith('[[') && line.endsWith(']]')) {
+      const sectionPath = line.slice(2, -2).trim().split('.');
+      let target = root;
+      for (let i = 0; i < sectionPath.length; i++) {
+        const seg = sectionPath[i];
+        if (i === sectionPath.length - 1) {
+          if (!Array.isArray(target[seg])) {
+            target[seg] = [];
+          }
+          const newObj = {};
+          target[seg].push(newObj);
+          currentObj = newObj;
+        } else {
+          if (!target[seg] || typeof target[seg] !== 'object' || Array.isArray(target[seg])) {
+            target[seg] = {};
+          }
+          target = target[seg];
+        }
+      }
+      continue;
+    }
+
+    if (line.startsWith('[') && line.endsWith(']')) {
+      const sectionPath = line.slice(1, -1).trim().split('.');
+      let target = root;
+      for (let i = 0; i < sectionPath.length; i++) {
+        const seg = sectionPath[i];
+        if (!target[seg] || typeof target[seg] !== 'object' || Array.isArray(target[seg])) {
+          target[seg] = {};
+        }
+        target = target[seg];
+      }
+      currentObj = target;
+      continue;
+    }
+
+    const eqIdx = line.indexOf('=');
+    if (eqIdx !== -1) {
+      const key = line.slice(0, eqIdx).trim().replace(/^["']|["']$/g, '');
+      const rawVal = line.slice(eqIdx + 1).trim();
+
+      let val = rawVal;
+      if (rawVal === 'true') val = true;
+      else if (rawVal === 'false') val = false;
+      else if (!isNaN(rawVal) && rawVal !== '') val = Number(rawVal);
+      else if ((rawVal.startsWith('"') && rawVal.endsWith('"')) || (rawVal.startsWith("'") && rawVal.endsWith("'"))) {
+        try {
+          val = JSON.parse(rawVal);
+        } catch {
+          val = rawVal.slice(1, -1);
+        }
+      } else if (rawVal.startsWith('[') && rawVal.endsWith(']')) {
+        try {
+          val = JSON.parse(rawVal);
+        } catch {
+          val = rawVal.slice(1, -1).split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
+        }
+      }
+
+      currentObj[key] = val;
+    }
+  }
+
+  return root;
+}
+
+/**
+ * Converts TOML string to XML
+ * @param {string} tomlString
+ * @param {object} [options]
+ * @returns {string} XML string
+ */
+export function tomlToXml(tomlString, options = {}) {
+  const json = tomlToJson(tomlString);
+  const rootTag = options.rootTag || 'config';
+  return jsonToXml({ [rootTag]: json }, options);
+}
+
+/**
+ * Converts XML document into structured Markdown outline and tables
+ * @param {string} xmlString
+ * @param {object} [options]
+ * @returns {string} Markdown string
+ */
+export function xmlToMarkdown(xmlString, options = {}) {
+  const parsed = parseXml(xmlString, { tolerant: true });
+  if (!parsed.root) return '';
+
+  const lines = [];
+
+  function formatAttributes(attrs) {
+    if (!attrs || Object.keys(attrs).length === 0) return '';
+    const parts = Object.entries(attrs).map(([k, v]) => `${k}="${v}"`);
+    return ` *(${parts.join(', ')})*`;
+  }
+
+  function walk(node, depth = 1) {
+    if (node.type === 'element') {
+      const headerPrefix = '#'.repeat(Math.min(depth, 6));
+      const attrStr = formatAttributes(node.attributes);
+
+      const children = (node.children || []).filter(c => c.type === 'element');
+      const textChildren = (node.children || []).filter(c => c.type === 'text' && c.text.trim());
+
+      if (children.length === 0 && textChildren.length > 0) {
+        const textVal = textChildren.map(t => t.text.trim()).join(' ');
+        if (depth > 2) {
+          lines.push(`${'  '.repeat(depth - 3)}- **${node.name}**${attrStr}: ${textVal}`);
+        } else {
+          lines.push(`${headerPrefix} ${node.name}${attrStr}`);
+          lines.push('');
+          lines.push(textVal);
+          lines.push('');
+        }
+        return;
+      }
+
+      // Check if children form a tabular collection of identical elements
+      if (children.length >= 2 && children.every(c => c.name === children[0].name)) {
+        const sampleRecord = children[0];
+        const recordChildren = (sampleRecord.children || []).filter(c => c.type === 'element');
+        const hasSubObjects = recordChildren.some(rc => (rc.children || []).some(sub => sub.type === 'element'));
+
+        if (!hasSubObjects && recordChildren.length >= 1) {
+          lines.push(`${headerPrefix} ${node.name}${attrStr}`);
+          lines.push('');
+
+          const colSet = new Set();
+          if (sampleRecord.attributes) {
+            Object.keys(sampleRecord.attributes).forEach(k => colSet.add(`@${k}`));
+          }
+          recordChildren.forEach(rc => colSet.add(rc.name));
+          const cols = Array.from(colSet);
+
+          lines.push(`| ${cols.join(' | ')} |`);
+          lines.push(`| ${cols.map(() => '---').join(' | ')} |`);
+
+          for (const rec of children) {
+            const rowVals = cols.map(col => {
+              if (col.startsWith('@')) {
+                const attrName = col.slice(1);
+                return rec.attributes ? (rec.attributes[attrName] || '') : '';
+              }
+              const childEl = (rec.children || []).find(c => c.name === col);
+              if (!childEl) return '';
+              const txt = (childEl.children || [])
+                .filter(c => c.type === 'text')
+                .map(c => c.text.trim())
+                .join(' ');
+              return txt.replace(/\|/g, '\\|');
+            });
+            lines.push(`| ${rowVals.join(' | ')} |`);
+          }
+          lines.push('');
+          return;
+        }
+      }
+
+      if (depth <= 3) {
+        lines.push(`${headerPrefix} ${node.name}${attrStr}`);
+        lines.push('');
+      } else {
+        lines.push(`${'  '.repeat(depth - 3)}- **${node.name}**${attrStr}`);
+      }
+
+      for (const child of node.children || []) {
+        if (child.type === 'element') {
+          walk(child, depth + 1);
+        } else if (child.type === 'text' && child.text.trim()) {
+          lines.push(`${'  '.repeat(Math.max(0, depth - 2))}${child.text.trim()}`);
+        }
+      }
+
+      if (depth <= 3) {
+        lines.push('');
+      }
+    }
+  }
+
+  walk(parsed.root, 1);
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/**
+ * Converts structured Markdown headings, lists, and tables into XML
+ * @param {string} mdString
+ * @param {object} [options]
+ * @returns {string} XML string
+ */
+export function markdownToXml(mdString, options = {}) {
+  if (!mdString || !mdString.trim()) return '<document></document>';
+
+  const lines = mdString.split(/\r?\n/);
+  const rootTag = options.rootTag || 'document';
+  const xmlLines = [`<${rootTag}>`];
+
+  let inTable = false;
+  let tableHeaders = [];
+
+  function escapeXmlText(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const line = raw.trim();
+
+    if (!line) {
+      if (inTable) {
+        xmlLines.push('  </table>');
+        inTable = false;
+      }
+      continue;
+    }
+
+    if (line.startsWith('|') && line.endsWith('|')) {
+      const cells = line.slice(1, -1).split('|').map(c => c.trim());
+      if (cells.every(c => /^:?-+:?$/.test(c))) {
+        continue;
+      }
+
+      if (!inTable) {
+        inTable = true;
+        tableHeaders = cells.map(c => c.replace(/[^a-zA-Z0-9_-]/g, '_') || 'col');
+        xmlLines.push('  <table>');
+      } else {
+        xmlLines.push('    <row>');
+        cells.forEach((cell, idx) => {
+          const colName = tableHeaders[idx] || `col_${idx + 1}`;
+          xmlLines.push(`      <${colName}>${escapeXmlText(cell)}</${colName}>`);
+        });
+        xmlLines.push('    </row>');
+      }
+      continue;
+    } else if (inTable) {
+      xmlLines.push('  </table>');
+      inTable = false;
+    }
+
+    const hMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (hMatch) {
+      const level = hMatch[1].length;
+      const title = hMatch[2].replace(/\s*\*\(.*?\)\*\s*$/, '').trim();
+      xmlLines.push(`  <heading level="${level}">${escapeXmlText(title)}</heading>`);
+      continue;
+    }
+
+    const listMatch = line.match(/^[-*+]\s+(.+)$/);
+    if (listMatch) {
+      const content = listMatch[1];
+      const kvMatch = content.match(/^\*\*([^*]+)\*\*:\s*(.+)$/);
+      if (kvMatch) {
+        const key = kvMatch[1].replace(/[^a-zA-Z0-9_-]/g, '_') || 'item';
+        const val = kvMatch[2];
+        xmlLines.push(`  <${key}>${escapeXmlText(val)}</${key}>`);
+      } else {
+        xmlLines.push(`  <item>${escapeXmlText(content)}</item>`);
+      }
+      continue;
+    }
+
+    xmlLines.push(`  <paragraph>${escapeXmlText(line)}</paragraph>`);
+  }
+
+  if (inTable) {
+    xmlLines.push('  </table>');
+  }
+
+  xmlLines.push(`</${rootTag}>`);
+  return xmlLines.join('\n');
+}
+
+/**
+ * Auto-detects data format: 'xml' | 'json' | 'yaml' | 'csv' | 'toml' | 'markdown' | 'txt'
  * @param {string} text
- * @returns {'xml'|'json'|'yaml'|'csv'|'txt'}
+ * @returns {'xml'|'json'|'yaml'|'csv'|'toml'|'markdown'|'txt'}
  */
 export function detectFormat(text) {
   if (!text || !text.trim()) return 'xml';
@@ -938,7 +1370,17 @@ export function detectFormat(text) {
     } catch (_) {}
   }
 
-  // 3. CSV check: multiple lines with consistent commas, semicolons, or tabs
+  // 3. TOML check: [section] or [[section]]
+  if (/^\[\[?[a-zA-Z0-9_\-\.]+\]?\]/m.test(trimmed)) {
+    return 'toml';
+  }
+
+  // 4. Markdown check: headings or tables
+  if (/^#{1,6}\s+/m.test(trimmed) || /^\|.+?\|.+?\|/m.test(trimmed)) {
+    return 'markdown';
+  }
+
+  // 5. CSV check: multiple lines with consistent commas, semicolons, or tabs
   const lines = trimmed.split('\n').filter(l => l.trim().length > 0);
   if (lines.length >= 2) {
     const commaCount0 = (lines[0].match(/,/g) || []).length;
@@ -948,7 +1390,7 @@ export function detectFormat(text) {
     }
   }
 
-  // 4. YAML check: key: value structure
+  // 6. YAML check: key: value structure
   if (/^[a-zA-Z0-9_-]+\s*:\s*.+/m.test(trimmed) || /^\s*-\s+.+/m.test(trimmed)) {
     return 'yaml';
   }

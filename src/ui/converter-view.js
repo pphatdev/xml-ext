@@ -1,11 +1,19 @@
 /**
- * Converter View Component
- * Supports bidirectional conversions to JSON, TXT, CSV, YAML, and Tree.
- * Features both syntax-highlighted Blog Code Preview and raw editable Textarea,
+ * Multi-Format Preview & Converter View Component
+ * Supports live syntax-highlighted previews for JSON, XML, CSV, YAML, Markdown, TOML, and TXT.
+ * Features both syntax-highlighted Blog Code Preview, Rendered Markdown view, and raw editable Textarea,
  * with word wrap toggle and full pane fit.
  */
 
-import { xmlToJson, jsonToXml, xmlToTxt, xmlToCsv, xmlToYaml } from '../core/converter.js';
+import {
+  xmlToJson,
+  jsonToXml,
+  xmlToTxt,
+  xmlToCsv,
+  xmlToYaml,
+  xmlToToml,
+  xmlToMarkdown
+} from '../core/converter.js';
 import { formatXml } from '../core/formatter.js';
 import { parseMarkdown } from '../core/markdown.js';
 import { showToast } from './toast.js';
@@ -14,7 +22,7 @@ export class XmlConverterView {
   constructor(containerEl, options = {}) {
     this.container = containerEl;
     this.onLoadIntoEditor = options.onLoadIntoEditor || (() => {});
-    this.activeTarget = 'json'; // 'json' | 'txt' | 'csv' | 'yaml' | 'json2xml'
+    this.activeTarget = 'json'; // 'json' | 'xml' | 'csv' | 'yaml' | 'markdown' | 'toml' | 'txt' | 'entities'
     this.viewMode = 'preview'; // 'preview' | 'raw'
     this.isWrapped = false;
     this.currentXml = '';
@@ -26,34 +34,72 @@ export class XmlConverterView {
     this.container.innerHTML = `
       <div class="converter-wrapper">
         <div class="converter-toolbar">
-          <div class="converter-format-tabs">
-            <button type="button" class="tab-btn active" data-target="json">
-              <img src="icons/json.png" class="tab-format-icon" alt="JSON" />
-              <span>XML to JSON</span>
-            </button>
-            <button type="button" class="tab-btn" data-target="entities">
-              <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
-              </svg>
-              <span>Format Entities</span>
-            </button>
-            <button type="button" class="tab-btn" data-target="txt">
-              <img src="icons/txt.png" class="tab-format-icon" alt="TXT" />
-              <span>XML to TXT</span>
-            </button>
-            <button type="button" class="tab-btn" data-target="csv">
-              <img src="icons/csv.png" class="tab-format-icon" alt="CSV" />
-              <span>XML to CSV</span>
-            </button>
-            <button type="button" class="tab-btn" data-target="yaml">
-              <img src="icons/yaml.png" class="tab-format-icon" alt="YAML" />
-              <span>XML to YAML</span>
-            </button>
-            <button type="button" class="tab-btn" data-target="json2xml">
-              <img src="icons/json.png" class="tab-format-icon" alt="JSON" />
-              <span>JSON to XML</span>
-            </button>
+          <div class="converter-header-left">
+            <span class="preview-target-badge" id="preview-target-badge">JSON PREVIEW</span>
           </div>
+
+          <!-- Format-Specific Options -->
+          <div class="converter-options-bar" id="converter-options-bar">
+            <!-- JSON Options -->
+            <div id="opts-json" class="conv-opt-group">
+              <label class="form-check-inline">
+                <input type="radio" name="json-mode" value="clean" checked /> Standard JSON
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="json-mode" value="detailed" /> Detailed (Badgerfish)
+              </label>
+            </div>
+
+            <!-- XML Options -->
+            <div id="opts-xml" class="conv-opt-group hidden">
+              <label class="form-check-inline">
+                <input type="radio" name="xml-mode" value="auto" checked /> Clean Prettified
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="xml-mode" value="named" /> Named Entities
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="xml-mode" value="numeric" /> Numeric
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="xml-mode" value="hex" /> Hex
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="xml-mode" value="decode" /> Decode
+              </label>
+            </div>
+
+            <!-- CSV Options -->
+            <div id="opts-csv" class="conv-opt-group hidden">
+              <label class="form-check-inline">
+                <input type="radio" name="csv-delimiter" value="," checked /> Comma (CSV)
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="csv-delimiter" value="&#9;" /> Tab (TSV)
+              </label>
+            </div>
+
+            <!-- Markdown Options -->
+            <div id="opts-markdown" class="conv-opt-group hidden">
+              <label class="form-check-inline">
+                <input type="radio" name="md-mode" value="rendered" checked /> Rendered Document
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="md-mode" value="source" /> Markdown Code
+              </label>
+            </div>
+
+            <!-- TXT Options -->
+            <div id="opts-txt" class="conv-opt-group hidden">
+              <label class="form-check-inline">
+                <input type="radio" name="txt-mode" value="outline" checked /> Structured Outline
+              </label>
+              <label class="form-check-inline">
+                <input type="radio" name="txt-mode" value="raw" /> Raw Text Only
+              </label>
+            </div>
+          </div>
+
           <div class="converter-actions">
             <!-- Toggle Highlighted Preview vs Raw Text -->
             <button type="button" id="btn-toggle-preview-mode" class="btn-sm" title="Toggle between Highlighted Code Preview and Raw Text">
@@ -71,8 +117,8 @@ export class XmlConverterView {
               Wrap
             </button>
 
-            <!-- Copy Converted -->
-            <button type="button" id="btn-copy-converted" class="btn-sm" title="Copy converted content">
+            <!-- Copy Preview Content -->
+            <button type="button" id="btn-copy-converted" class="btn-sm" title="Copy preview content">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
                 <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
@@ -81,103 +127,43 @@ export class XmlConverterView {
             </button>
 
             <!-- Download -->
-            <button type="button" id="btn-download-converted" class="btn-sm" title="Download file">
+            <button type="button" id="btn-download-converted" class="btn-sm" title="Download preview file">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
               </svg>
               Download
             </button>
-
-            <!-- Load into editor -->
-            <button type="button" id="btn-load-converted-to-editor" class="btn-sm hidden" title="Load XML to Main Editor">
-              Load Into Editor
-            </button>
           </div>
         </div>
 
-        <!-- Options Bar -->
-        <div class="converter-options-bar" id="converter-options-bar">
-          <div id="opts-json" class="conv-opt-group">
-            <label class="form-check-inline">
-              <input type="radio" name="json-mode" value="clean" checked /> Standard JSON
-            </label>
-            <label class="form-check-inline">
-              <input type="radio" name="json-mode" value="detailed" /> Detailed (Badgerfish)
-            </label>
-          </div>
-
-          <div id="opts-entities" class="conv-opt-group hidden">
-            <label class="form-check-inline">
-              <input type="radio" name="conv-entity-mode" value="numeric" checked /> Numeric (&#160;)
-            </label>
-            <label class="form-check-inline">
-              <input type="radio" name="conv-entity-mode" value="hex" /> Hex (&#xA0;)
-            </label>
-            <label class="form-check-inline">
-              <input type="radio" name="conv-entity-mode" value="named" /> Named XML (&amp;amp;)
-            </label>
-            <label class="form-check-inline">
-              <input type="radio" name="conv-entity-mode" value="decode" /> Decode to UTF-8
-            </label>
-          </div>
-
-          <div id="opts-txt" class="conv-opt-group hidden">
-            <label class="form-check-inline">
-              <input type="radio" name="txt-mode" value="outline" checked /> Structured Outline
-            </label>
-            <label class="form-check-inline">
-              <input type="radio" name="txt-mode" value="raw" /> Raw Text Only
-            </label>
-          </div>
-
-          <div id="opts-csv" class="conv-opt-group hidden">
-            <label class="form-check-inline">
-              <input type="radio" name="csv-delimiter" value="," checked /> Comma (CSV)
-            </label>
-            <label class="form-check-inline">
-              <input type="radio" name="csv-delimiter" value="&#9;" /> Tab (TSV)
-            </label>
-          </div>
-
-          <div id="opts-json2xml" class="conv-opt-group hidden">
-            <label class="conv-label">Root Tag: <input type="text" id="json2xml-root" class="input-inline" value="root" /></label>
-          </div>
-        </div>
-
-        <!-- Content Area: Preview Box + Textarea (Both fill 100% height & width) -->
+        <!-- Content Area: Preview Box + Rendered Markdown + Raw Textarea -->
         <div class="converter-content" id="converter-content-area">
           <div id="converter-preview-box" class="converter-preview-box"></div>
+          <div id="converter-markdown-box" class="rendered-markdown-body hidden"></div>
           <textarea
             id="converter-output-textarea"
             class="converter-textarea hidden"
             spellcheck="false"
-            placeholder="Converted output will appear here..."
+            placeholder="Preview output will appear here..."
           ></textarea>
         </div>
       </div>
     `;
 
+    this.previewBadge = this.container.querySelector('#preview-target-badge');
     this.previewBox = this.container.querySelector('#converter-preview-box');
+    this.markdownBox = this.container.querySelector('#converter-markdown-box');
     this.outputTextarea = this.container.querySelector('#converter-output-textarea');
     this.btnToggleMode = this.container.querySelector('#btn-toggle-preview-mode');
     this.previewModeText = this.container.querySelector('#preview-mode-text');
     this.btnToggleWrap = this.container.querySelector('#btn-toggle-wrap');
     this.btnCopy = this.container.querySelector('#btn-copy-converted');
     this.btnDownload = this.container.querySelector('#btn-download-converted');
-    this.btnLoadEditor = this.container.querySelector('#btn-load-converted-to-editor');
 
-    // Tab buttons
-    const tabs = this.container.querySelectorAll('.converter-format-tabs .tab-btn');
-    for (const tab of tabs) {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        this.activeTarget = tab.dataset.target;
-        this.updateOptionsVisibility();
-        this.convert();
-      });
-    }
+    this.initEvents();
+  }
 
+  initEvents() {
     // Toggle Preview vs Raw Mode
     this.btnToggleMode.addEventListener('click', () => {
       this.viewMode = this.viewMode === 'preview' ? 'raw' : 'preview';
@@ -189,71 +175,75 @@ export class XmlConverterView {
       this.isWrapped = !this.isWrapped;
       this.outputTextarea.classList.toggle('wrap-text', this.isWrapped);
       this.previewBox.classList.toggle('wrap-text', this.isWrapped);
+      this.markdownBox.classList.toggle('wrap-text', this.isWrapped);
       this.btnToggleWrap.classList.toggle('active', this.isWrapped);
       showToast(`Word wrap ${this.isWrapped ? 'enabled' : 'disabled'}`, 'info');
     });
 
-    // Options changes
+    // Options radio changes
     this.container.querySelectorAll('input[type=radio]').forEach(r => {
       r.addEventListener('change', () => this.convert());
     });
-    this.container.querySelector('#json2xml-root').addEventListener('input', () => this.convert());
 
     // Copy & Download
     this.btnCopy.addEventListener('click', () => {
       const textToCopy = this.convertedOutput || this.outputTextarea.value;
       if (textToCopy) {
         navigator.clipboard.writeText(textToCopy);
-        showToast('Converted content copied to clipboard', 'success');
+        showToast(`${this.activeTarget.toUpperCase()} preview copied to clipboard`, 'success');
       }
     });
 
     this.btnDownload.addEventListener('click', () => {
       this.downloadOutput();
     });
+  }
 
-    this.btnLoadEditor.addEventListener('click', () => {
-      const val = this.convertedOutput || this.outputTextarea.value;
-      if (val) {
-        this.onLoadIntoEditor(val);
-        showToast('Converted XML loaded into Editor', 'success');
-      }
-    });
-
-    // Support typing JSON directly when in json2xml mode
-    this.outputTextarea.addEventListener('input', () => {
-      if (this.activeTarget === 'json2xml') {
-        const rootTag = this.container.querySelector('#json2xml-root').value.trim() || 'root';
-        try {
-          this.convertedOutput = jsonToXml(this.outputTextarea.value, { rootTag });
-        } catch (_) {}
-      }
-    });
+  setTarget(target) {
+    if (!target) return;
+    this.activeTarget = target;
+    this.updateOptionsVisibility();
+    this.convert();
   }
 
   updateViewModeUI() {
-    const isRaw = this.viewMode === 'raw' || this.activeTarget === 'json2xml';
-    this.previewBox.classList.toggle('hidden', isRaw);
-    this.outputTextarea.classList.toggle('hidden', !isRaw);
+    const isRaw = this.viewMode === 'raw';
+    const isMarkdownRendered = this.activeTarget === 'markdown' && !isRaw &&
+      (this.container.querySelector('input[name="md-mode"]:checked')?.value || 'rendered') === 'rendered';
+
+    if (isMarkdownRendered) {
+      this.markdownBox.classList.remove('hidden');
+      this.previewBox.classList.add('hidden');
+      this.outputTextarea.classList.add('hidden');
+    } else {
+      this.markdownBox.classList.add('hidden');
+      this.previewBox.classList.toggle('hidden', isRaw);
+      this.outputTextarea.classList.toggle('hidden', !isRaw);
+    }
+
     this.previewModeText.textContent = isRaw ? 'Preview' : 'Raw Text';
   }
 
   updateOptionsVisibility() {
+    if (this.previewBadge) {
+      const titles = {
+        json: 'JSON PREVIEW',
+        xml: 'XML PREVIEW',
+        csv: 'CSV PREVIEW',
+        yaml: 'YAML PREVIEW',
+        markdown: 'MARKDOWN PREVIEW',
+        toml: 'TOML PREVIEW',
+        txt: 'TXT PREVIEW'
+      };
+      this.previewBadge.textContent = titles[this.activeTarget] || `${this.activeTarget.toUpperCase()} PREVIEW`;
+    }
+
     this.container.querySelector('#opts-json').classList.toggle('hidden', this.activeTarget !== 'json');
-    this.container.querySelector('#opts-entities').classList.toggle('hidden', this.activeTarget !== 'entities');
+    this.container.querySelector('#opts-xml').classList.toggle('hidden', this.activeTarget !== 'xml');
     this.container.querySelector('#opts-txt').classList.toggle('hidden', this.activeTarget !== 'txt');
     this.container.querySelector('#opts-csv').classList.toggle('hidden', this.activeTarget !== 'csv');
-    this.container.querySelector('#opts-json2xml').classList.toggle('hidden', this.activeTarget !== 'json2xml');
-    this.btnLoadEditor.classList.toggle('hidden', this.activeTarget !== 'json2xml' && this.activeTarget !== 'entities');
+    this.container.querySelector('#opts-markdown').classList.toggle('hidden', this.activeTarget !== 'markdown');
 
-    if (this.activeTarget === 'json2xml') {
-      this.outputTextarea.readOnly = false;
-      this.outputTextarea.placeholder = 'Paste or type JSON here to convert into XML...';
-      this.viewMode = 'raw';
-    } else {
-      this.outputTextarea.readOnly = true;
-      this.outputTextarea.placeholder = 'Converted output will appear here...';
-    }
     this.updateViewModeUI();
   }
 
@@ -263,56 +253,59 @@ export class XmlConverterView {
   }
 
   convert() {
-    if (this.activeTarget === 'json2xml') {
-      const jsonStr = this.outputTextarea.value.trim();
-      const rootTag = this.container.querySelector('#json2xml-root').value.trim() || 'root';
-      if (jsonStr) {
-        try {
-          const xml = jsonToXml(jsonStr, { rootTag });
-          this.convertedOutput = xml;
-          this.renderOutput('xml');
-          return;
-        } catch (err) {
-          this.renderError(err.message);
-          return;
-        }
-      }
-      return;
-    }
-
     if (!this.currentXml || !this.currentXml.trim()) {
       this.convertedOutput = '';
       this.outputTextarea.value = '';
-      this.previewBox.innerHTML = '<div class="text-muted" style="padding: 1.5rem; text-align: center;">No XML input to convert. Type or load XML in the editor.</div>';
+      this.previewBox.innerHTML = '<div class="text-muted" style="padding: 1.5rem; text-align: center;">No document loaded. Type or paste content in the editor.</div>';
+      this.markdownBox.innerHTML = '<div class="text-muted" style="padding: 1.5rem; text-align: center;">No document loaded.</div>';
       return;
     }
 
     try {
       let lang = 'json';
       if (this.activeTarget === 'json') {
-        const mode = this.container.querySelector('input[name="json-mode"]:checked').value;
+        const mode = this.container.querySelector('input[name="json-mode"]:checked')?.value || 'clean';
         const json = xmlToJson(this.currentXml, { mode });
         this.convertedOutput = JSON.stringify(json, null, 2);
         lang = 'json';
-      } else if (this.activeTarget === 'entities') {
-        const entityMode = this.container.querySelector('input[name="conv-entity-mode"]:checked')?.value || 'numeric';
-        this.convertedOutput = formatXml(this.currentXml, { indent: '  ', entities: entityMode });
+      } else if (this.activeTarget === 'xml') {
+        const mode = this.container.querySelector('input[name="xml-mode"]:checked')?.value || 'auto';
+        this.convertedOutput = formatXml(this.currentXml, { indent: '  ', preserveComments: true, entities: mode });
         lang = 'xml';
-      } else if (this.activeTarget === 'txt') {
-        const mode = this.container.querySelector('input[name="txt-mode"]:checked').value;
-        this.convertedOutput = xmlToTxt(this.currentXml, { mode });
-        lang = 'text';
       } else if (this.activeTarget === 'csv') {
-        const delimiter = this.container.querySelector('input[name="csv-delimiter"]:checked').value;
+        const delimiter = this.container.querySelector('input[name="csv-delimiter"]:checked')?.value || ',';
         this.convertedOutput = xmlToCsv(this.currentXml, delimiter);
-        lang = 'text';
+        lang = 'csv';
       } else if (this.activeTarget === 'yaml') {
         this.convertedOutput = xmlToYaml(this.currentXml);
         lang = 'yaml';
+      } else if (this.activeTarget === 'markdown') {
+        this.convertedOutput = xmlToMarkdown(this.currentXml);
+        lang = 'markdown';
+      } else if (this.activeTarget === 'toml') {
+        this.convertedOutput = xmlToToml(this.currentXml);
+        lang = 'toml';
+      } else if (this.activeTarget === 'txt') {
+        const mode = this.container.querySelector('input[name="txt-mode"]:checked')?.value || 'outline';
+        this.convertedOutput = xmlToTxt(this.currentXml, { mode });
+        lang = 'text';
       }
 
       this.outputTextarea.value = this.convertedOutput;
-      this.renderOutput(lang);
+
+      const isMarkdownRendered = this.activeTarget === 'markdown' && this.viewMode === 'preview' &&
+        (this.container.querySelector('input[name="md-mode"]:checked')?.value || 'rendered') === 'rendered';
+
+      if (isMarkdownRendered) {
+        this.markdownBox.classList.remove('hidden');
+        this.previewBox.classList.add('hidden');
+        this.outputTextarea.classList.add('hidden');
+        const parsed = parseMarkdown(this.convertedOutput);
+        this.markdownBox.innerHTML = parsed.html;
+      } else {
+        this.markdownBox.classList.add('hidden');
+        this.renderOutput(lang);
+      }
     } catch (err) {
       this.renderError(err.message);
     }
@@ -328,33 +321,30 @@ export class XmlConverterView {
     const parsed = parseMarkdown(md);
     this.previewBox.innerHTML = parsed.html;
 
-    // Bind copy button in preview header
+    // Bind copy button in code block header
     const copyBtn = this.previewBox.querySelector('.btn-copy-code');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(this.convertedOutput);
-        showToast('Converted code copied to clipboard', 'success');
+        showToast(`${this.activeTarget.toUpperCase()} preview copied`, 'success');
         const copyIcon = copyBtn.querySelector('.icon-copy');
         const checkIcon = copyBtn.querySelector('.icon-check');
-        const label = copyBtn.querySelector('.copy-label');
         copyBtn.classList.add('copied');
         if (copyIcon) copyIcon.classList.add('hidden');
         if (checkIcon) checkIcon.classList.remove('hidden');
-        if (label) label.textContent = 'Copied!';
         setTimeout(() => {
           copyBtn.classList.remove('copied');
           if (copyIcon) copyIcon.classList.remove('hidden');
           if (checkIcon) checkIcon.classList.add('hidden');
-          if (label) label.textContent = 'Copy';
         }, 1500);
       });
     }
   }
 
   renderError(msg) {
-    this.convertedOutput = `Conversion Error: ${msg}`;
+    this.convertedOutput = `Preview Error: ${msg}`;
     this.outputTextarea.value = this.convertedOutput;
-    this.previewBox.innerHTML = `<div style="padding: 1rem; color: var(--error);">Conversion Error: ${msg}</div>`;
+    this.previewBox.innerHTML = `<div style="padding: 1.5rem; color: var(--error);">Preview Error: ${msg}</div>`;
   }
 
   downloadOutput() {
@@ -366,11 +356,12 @@ export class XmlConverterView {
 
     const extMap = {
       json: { ext: 'json', mime: 'application/json' },
-      entities: { ext: 'xml', mime: 'application/xml' },
+      xml: { ext: 'xml', mime: 'application/xml' },
       txt: { ext: 'txt', mime: 'text/plain' },
       csv: { ext: 'csv', mime: 'text/csv' },
       yaml: { ext: 'yaml', mime: 'text/yaml' },
-      json2xml: { ext: 'xml', mime: 'application/xml' }
+      markdown: { ext: 'md', mime: 'text/markdown' },
+      toml: { ext: 'toml', mime: 'application/toml' }
     };
 
     const targetInfo = extMap[this.activeTarget] || { ext: 'txt', mime: 'text/plain' };
@@ -378,10 +369,9 @@ export class XmlConverterView {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `converted.${targetInfo.ext}`;
+    a.download = `preview.${targetInfo.ext}`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast(`Downloaded converted.${targetInfo.ext}`, 'success');
+    showToast(`Downloaded preview.${targetInfo.ext}`, 'success');
   }
 }
-

@@ -298,8 +298,92 @@ export function highlightCode(code, lang = '') {
   if (effectiveLang === 'yaml' || effectiveLang === 'yml') {
     return highlightYaml(code);
   }
+  if (effectiveLang === 'toml') {
+    return highlightToml(code);
+  }
+  if (effectiveLang === 'markdown' || effectiveLang === 'md') {
+    return highlightMarkdown(code);
+  }
+  if (effectiveLang === 'csv' || effectiveLang === 'tsv') {
+    return highlightCsv(code);
+  }
 
   return escapeHtml(code);
+}
+
+function highlightToml(code) {
+  const escaped = escapeHtml(code);
+  const lines = escaped.split('\n');
+
+  return lines.map(line => {
+    if (line.trim().startsWith('#')) {
+      return `<span class="token-comment">${line}</span>`;
+    }
+    if (/^\s*\[\[.*?\]\]\s*$/.test(line)) {
+      return line.replace(/^(\s*)(\[\[.*?\]\])(\s*)$/, '$1<span class="token-tag">$2</span>$3');
+    }
+    if (/^\s*\[.*?\]\s*$/.test(line)) {
+      return line.replace(/^(\s*)(\[.*?\])(\s*)$/, '$1<span class="token-tag">$2</span>$3');
+    }
+
+    const eqIdx = line.indexOf('=');
+    if (eqIdx !== -1) {
+      const keyPart = line.slice(0, eqIdx);
+      const valPart = line.slice(eqIdx + 1);
+
+      let highlightedVal = valPart;
+      if (valPart.includes('&quot;')) {
+        highlightedVal = valPart.replace(/(&quot;[\s\S]*?&quot;)/g, '<span class="token-string">$1</span>');
+      } else if (/\b(true|false)\b/.test(valPart)) {
+        highlightedVal = valPart.replace(/\b(true|false)\b/g, '<span class="token-boolean">$1</span>');
+      } else if (/\b-?\d+(\.\d+)?\b/.test(valPart)) {
+        highlightedVal = valPart.replace(/\b(-?\d+(\.\d+)?)\b/g, '<span class="token-number">$1</span>');
+      }
+
+      return `<span class="token-property">${keyPart}</span><span class="token-punct">=</span>${highlightedVal}`;
+    }
+
+    return line;
+  }).join('\n');
+}
+
+function highlightMarkdown(code) {
+  const escaped = escapeHtml(code);
+  const lines = escaped.split('\n');
+
+  return lines.map(line => {
+    if (/^#{1,6}\s+/.test(line)) {
+      return `<span class="token-tag">${line}</span>`;
+    }
+    if (/^[-*+]\s+/.test(line)) {
+      return line.replace(/^([-*+]\s+)/, '<span class="token-punct">$1</span>')
+        .replace(/(\*\*[^*]+\*\*)/g, '<span class="token-property">$1</span>');
+    }
+    if (/^\|.*\|$/.test(line)) {
+      return `<span class="token-string">${line}</span>`;
+    }
+    return line;
+  }).join('\n');
+}
+
+function highlightCsv(code) {
+  const escaped = escapeHtml(code);
+  const lines = escaped.split('\n');
+
+  return lines.map((line, idx) => {
+    if (idx === 0) {
+      return `<span class="token-property">${line.split(',').join('</span><span class="token-punct">,</span><span class="token-property">')}</span>`;
+    }
+    return line.split(',').map(cell => {
+      if (cell.startsWith('&quot;') && cell.endsWith('&quot;')) {
+        return `<span class="token-string">${cell}</span>`;
+      }
+      if (!isNaN(cell.trim()) && cell.trim() !== '') {
+        return `<span class="token-number">${cell}</span>`;
+      }
+      return cell;
+    }).join('<span class="token-punct">,</span>');
+  }).join('\n');
 }
 
 function highlightXml(code) {
@@ -428,6 +512,22 @@ function getLanguageIconHtml(lang) {
   const iconSrc = iconMap[norm];
   if (iconSrc) {
     return `<img src="${iconSrc}" class="code-lang-icon" alt="${escapeHtml(norm)}" title="${escapeHtml(norm.toUpperCase())}" />`;
+  }
+
+  if (norm === 'markdown' || norm === 'md') {
+    return `
+      <svg class="icon-sm code-lang-icon-svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 3a1 1 0 00-1 1v4a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414 0L12 9.414V12a1 1 0 102 0V8a1 1 0 00-1-1h-.586a1 1 0 00-.707.293L10.5 8.5l-1.207-1.207A1 1 0 008.586 7H6zm9 1a1 1 0 011 1v2.586l.293-.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414l.293.293V9a1 1 0 011-1z" clip-rule="evenodd"/>
+      </svg>
+    `;
+  }
+
+  if (norm === 'toml') {
+    return `
+      <svg class="icon-sm code-lang-icon-svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+      </svg>
+    `;
   }
 
   return `
