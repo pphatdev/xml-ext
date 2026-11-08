@@ -132,7 +132,8 @@ xml-ext/
 │   ├── editor.css             # Code editor, gutter & status bar
 │   ├── tree-view.css          # Interactive Tree view styling
 │   ├── chart.css              # SVG chart visualizer, linter & analyzer styling
-│   └── popup.css              # Compact popup styling
+│   ├── popup.css              # Compact popup styling
+│   └── sidepanel.css          # Dedicated Chrome side panel styling
 ├── src/
 │   ├── app.js                 # Central application coordinator
 │   ├── core/

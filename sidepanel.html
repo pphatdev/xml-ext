@@ -8,103 +8,42 @@
   <link rel="stylesheet" href="css/editor.css" />
   <link rel="stylesheet" href="css/tree-view.css" />
   <link rel="stylesheet" href="css/chart.css" />
-  <style>
-    body {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .sidepanel-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .sidepanel-toolbar {
-      padding: 0.5rem 0.75rem;
-      background-color: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .sidepanel-tabs {
-      display: flex;
-      gap: 0.25rem;
-      padding: 0.35rem 0.75rem;
-      background-color: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-color);
-      overflow-x: auto;
-    }
-    .sidepanel-pane {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* Ultra-compact Side Panel (<= 380px) */
-    @media (max-width: 380px) {
-      .app-header {
-        padding: 0.35rem 0.55rem;
-      }
-      .brand-name {
-        font-size: 0.88rem;
-      }
-      .sidepanel-toolbar {
-        padding: 0.35rem 0.5rem;
-        gap: 0.35rem;
-      }
-      .sidepanel-toolbar .toolbar-group {
-        gap: 0.25rem;
-      }
-      .sidepanel-tabs {
-        padding: 0.25rem 0.5rem;
-        gap: 0.15rem;
-      }
-      .sidepanel-tabs .tab-btn {
-        padding: 0.25rem 0.45rem;
-        font-size: 0.72rem;
-      }
-      .btn-sm {
-        padding: 0.25rem 0.45rem;
-        font-size: 0.7rem;
-      }
-      .header-right .btn-sm .btn-text {
-        display: none;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="css/sidepanel.css" />
 </head>
-<body>
-  <header class="app-header" style="padding: 0.5rem 0.75rem;">
+<body class="sidepanel-body">
+  <!-- Brand Header -->
+  <header class="app-header sidepanel-header">
     <div class="brand-group">
-      <div class="brand-icon" style="width: 26px; height: 26px;">
-        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
         </svg>
       </div>
-      <span class="brand-name" style="font-size: 1rem;">XML Pro Panel</span>
+      <div class="brand-title-wrap">
+        <span class="brand-name">XML Pro Panel</span>
+        <span class="brand-badge">Side Panel</span>
+      </div>
     </div>
 
+    <!-- Live Validation Badge -->
+    <div class="header-center">
+      <div id="sp-validation-badge" class="val-badge val-badge-empty" title="Validation status">Ready</div>
+    </div>
+
+    <!-- Top Action Icons -->
     <div class="header-right">
-      <a href="docs.html" target="_blank" class="btn-sm" title="Documentation" style="text-decoration: none; color: var(--text-normal); display: inline-flex; align-items: center; gap: 0.3rem;">
+      <a href="docs.html" target="_blank" class="btn-icon" title="Documentation" aria-label="Documentation">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+          <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804V12a1 1 0 11-2 0V4.804z"/>
         </svg>
-        <span class="btn-text">Docs</span>
       </a>
-      <button type="button" id="btn-sidepanel-full" class="btn-sm" title="Open Full Studio in Tab">
-        <span class="btn-text">Expand</span>
+      <button type="button" id="btn-sidepanel-full" class="btn-icon" title="Open Full Studio in Tab" aria-label="Open Full Studio">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
           <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
           <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
         </svg>
       </button>
-      <button type="button" id="btn-sidepanel-theme" class="btn-icon theme-toggle-btn" title="Toggle Theme">
+      <button type="button" id="btn-sidepanel-theme" class="btn-icon theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
         <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
           <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
         </svg>
@@ -112,34 +51,150 @@
     </div>
   </header>
 
-  <div class="sidepanel-toolbar">
+  <!-- Action Toolbar -->
+  <nav class="sidepanel-toolbar">
     <div class="toolbar-group">
-      <button type="button" id="btn-sp-format" class="btn-sm">Format</button>
-      <button type="button" id="btn-sp-minify" class="btn-sm">Minify</button>
-      <button type="button" id="btn-sp-validate" class="btn-sm">Validate</button>
+      <!-- Format Split Button -->
+      <div class="split-btn-group" id="sp-format-split-group">
+        <button type="button" id="btn-sp-format" class="btn-secondary btn-sm split-main-btn" title="Format / Prettify XML (Alt+Shift+F)" aria-label="Format XML">
+          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <button type="button" id="btn-sp-format-dropdown" class="btn-secondary btn-sm split-toggle-btn" aria-label="Format Options" title="Format Options (Entities)">
+          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <div class="dropdown-menu hidden" id="sp-format-dropdown-menu">
+          <button type="button" class="dropdown-item" data-entity-mode="auto">
+            <span class="dropdown-item-title">Format (Prettify)</span>
+            <span class="dropdown-item-desc">Standard indentation</span>
+          </button>
+          <button type="button" class="dropdown-item" data-entity-mode="named">
+            <span class="dropdown-item-title">Named Entities</span>
+            <span class="dropdown-item-desc">Escape &amp;, &lt;, &gt;, &quot;, &apos;</span>
+          </button>
+          <button type="button" class="dropdown-item" data-entity-mode="numeric">
+            <span class="dropdown-item-title">Numeric Entities</span>
+            <span class="dropdown-item-desc">Escape non-ASCII as &amp;#160;</span>
+          </button>
+          <button type="button" class="dropdown-item" data-entity-mode="hex">
+            <span class="dropdown-item-title">Hex Entities</span>
+            <span class="dropdown-item-desc">Escape non-ASCII as &amp;#xA0;</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item" data-entity-mode="decode">
+            <span class="dropdown-item-title">Decode Entities</span>
+            <span class="dropdown-item-desc">Restore character references</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Minify -->
+      <button type="button" id="btn-sp-minify" class="btn-secondary btn-sm" title="Minify XML" aria-label="Minify XML">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
+      <!-- Validate -->
+      <button type="button" id="btn-sp-validate" class="btn-secondary btn-sm" title="Validate XML well-formedness" aria-label="Validate XML">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Sitemap Generator -->
+      <button type="button" id="btn-sp-sitemap" class="btn-primary btn-sm" title="Open Sitemap Generator" aria-label="Sitemap Generator">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-.2c0-1.402-.555-2.673-1.453-3.6A4.98 4.98 0 007.5 10H6a2 2 0 01-1.668-1.973z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
+      <!-- Sample Picker -->
+      <select id="select-sp-sample" class="select-sm" title="Load sample XML" style="max-width: 95px;">
+        <option value="" disabled selected>Samples...</option>
+        <option value="ecommerce">E-Commerce</option>
+        <option value="catalog">Book Catalog</option>
+        <option value="sitemap">Sitemap</option>
+        <option value="rss">RSS Feed</option>
+        <option value="svg">SVG Graphic</option>
+      </select>
     </div>
+
     <div class="toolbar-group">
-      <button type="button" id="btn-sp-copy" class="btn-sm" title="Copy to clipboard" aria-label="Copy to clipboard">
+      <!-- Copy -->
+      <button type="button" id="btn-sp-copy" class="btn-secondary btn-sm" title="Copy to clipboard" aria-label="Copy to clipboard">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
           <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
           <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
         </svg>
       </button>
-      <button type="button" id="btn-sp-sitemap" class="btn-primary btn-sm">Sitemap</button>
+
+      <!-- Download -->
+      <button type="button" id="btn-sp-download" class="btn-secondary btn-sm" title="Download file" aria-label="Download file">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
+      <!-- Clear -->
+      <button type="button" id="btn-sp-clear" class="btn-secondary btn-sm" title="Clear content" aria-label="Clear content">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+      </button>
     </div>
-  </div>
+  </nav>
 
+  <!-- Modern Tabs -->
   <div class="sidepanel-tabs">
-    <button type="button" class="tab-btn active" data-view="editor">Editor</button>
-    <button type="button" class="tab-btn" data-view="tree">Tree</button>
-    <button type="button" class="tab-btn" data-view="converter">Convert</button>
-    <button type="button" class="tab-btn" data-view="linter">Linter</button>
-    <button type="button" class="tab-btn" data-view="analyzer">Analyzer</button>
+    <button type="button" class="tab-btn active" data-view="editor" title="XML Code Editor">
+      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+      </svg>
+      <span>Editor</span>
+    </button>
+    <button type="button" class="tab-btn" data-view="tree" title="Interactive DOM Tree">
+      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+      </svg>
+      <span>Tree</span>
+    </button>
+    <button type="button" class="tab-btn" data-view="chart" title="Interactive Diagram & Schema Chart">
+      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+      </svg>
+      <span>Chart</span>
+    </button>
+    <button type="button" class="tab-btn" data-view="converter" title="Format Converter">
+      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z"/>
+      </svg>
+      <span>Convert</span>
+    </button>
+    <button type="button" class="tab-btn" data-view="linter" title="Syntax Linter & Diagnostics">
+      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      </svg>
+      <span>Linter</span>
+    </button>
+    <button type="button" class="tab-btn" data-view="analyzer" title="Document Metrics & Depth Analyzer">
+      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L9.586 10l1.293 1.293a1 1 0 001.414 0l3-3z" clip-rule="evenodd"/>
+      </svg>
+      <span>Analyzer</span>
+    </button>
   </div>
 
+  <!-- Content Panes -->
   <main class="sidepanel-container">
     <div id="sp-pane-editor" class="sidepanel-pane"></div>
     <div id="sp-pane-tree" class="sidepanel-pane hidden"></div>
+    <div id="sp-pane-chart" class="sidepanel-pane hidden"></div>
     <div id="sp-pane-converter" class="sidepanel-pane hidden"></div>
     <div id="sp-pane-linter" class="sidepanel-pane hidden"></div>
     <div id="sp-pane-analyzer" class="sidepanel-pane hidden"></div>
@@ -148,4 +203,3 @@
   <script type="module" src="sidepanel.js"></script>
 </body>
 </html>
-
