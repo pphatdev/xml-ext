@@ -10,8 +10,13 @@ export async function fetchXmlFromUrl(targetUrl, options = {}) {
     throw new Error('URL cannot be empty');
   }
 
-  // Auto-normalize GitHub blob URLs to raw.githubusercontent.com
+  // Auto-normalize protocol if missing
   let effectiveUrl = url;
+  if (!/^https?:\/\//i.test(effectiveUrl) && !effectiveUrl.startsWith('file://')) {
+    effectiveUrl = 'https://' + effectiveUrl;
+  }
+
+  // Auto-normalize GitHub blob URLs to raw.githubusercontent.com
   if (effectiveUrl.includes('github.com') && effectiveUrl.includes('/blob/')) {
     effectiveUrl = effectiveUrl
       .replace('github.com', 'raw.githubusercontent.com')

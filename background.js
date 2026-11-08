@@ -1,10 +1,31 @@
 /**
  * Chrome Extension Background Service Worker (Manifest V3)
- * Handles auto-formatting on opening .xml links, CORS proxying, and context menus.
+ * Handles auto-formatting on opening .xml links, webNavigation interception,
+ * CORS proxying, and context menus.
  */
 
 // Cache recent redirects to prevent duplicate navigations
 const redirectCache = new Map();
+
+// Helper to check if a URL is an XML resource
+function isXmlTargetUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (
+    url.startsWith('chrome') ||
+    url.startsWith('edge') ||
+    url.startsWith('about:') ||
+    url.startsWith('devtools:') ||
+    url.startsWith('view-source:')
+  ) {
+    return false;
+  }
+  return /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(url);
+}
+
+function isRawBypassRequested(url) {
+  if (!url) return false;
+  return url.includes('raw=true') || url.includes('raw=1') || url.includes('noformat=1');
+}
 
 // Initialize on extension installation
 chrome.runtime.onInstalled.addListener(() => {
@@ -39,41 +60,45 @@ chrome.runtime.onInstalled.addListener(() => {
   }
 });
 
-// Auto-format when opening a .xml link directly in a browser tab
+// Primary Interception: webNavigation.onBeforeNavigate (fires before request renders)
+if (chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
+  chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    // Only intercept top-level main frame navigation
+    if (details.frameId !== 0) return;
+    const targetUrl = details.url;
+    if (!targetUrl || !isXmlTargetUrl(targetUrl) || isRawBypassRequested(targetUrl)) return;
+
+    // Prevent duplicate redirection within 4 seconds
+    const last = redirectCache.get(details.tabId);
+    if (last && last.url === targetUrl && (Date.now() - last.time < 4000)) {
+      return;
+    }
+    redirectCache.set(details.tabId, { url: targetUrl, time: Date.now() });
+
+    chrome.storage.local.get(['autoFormatXml'], (data) => {
+      if (data.autoFormatXml !== false) {
+        const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(targetUrl)}&autoformat=1`);
+        chrome.tabs.update(details.tabId, { url: studioUrl });
+      }
+    });
+  });
+}
+
+// Fallback Interception: tabs.onUpdated
 if (chrome.tabs && chrome.tabs.onUpdated) {
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     const targetUrl = changeInfo.url || tab?.url;
-    if (!targetUrl) return;
+    if (!targetUrl || !isXmlTargetUrl(targetUrl) || isRawBypassRequested(targetUrl)) return;
 
-    // Ignore extension internal pages, devtools, chrome://, and edge://
-    if (
-      targetUrl.startsWith('chrome') ||
-      targetUrl.startsWith('edge') ||
-      targetUrl.startsWith('about:') ||
-      targetUrl.startsWith('devtools:')
-    ) {
-      return;
-    }
-
-    // Check if link points to an XML file / resource
-    const isXmlLink = /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(targetUrl);
-    if (!isXmlLink) return;
-
-    // Respect user bypass if raw or unformatted is requested
-    const isRawRequested = targetUrl.includes('raw=true') || targetUrl.includes('raw=1') || targetUrl.includes('noformat=1');
-    if (isRawRequested) return;
-
-    // Prevent duplicate redirection triggers within 4 seconds
-    const lastRedirect = redirectCache.get(tabId);
-    if (lastRedirect && lastRedirect.url === targetUrl && (Date.now() - lastRedirect.time < 4000)) {
+    // Prevent duplicate redirection within 4 seconds
+    const last = redirectCache.get(tabId);
+    if (last && last.url === targetUrl && (Date.now() - last.time < 4000)) {
       return;
     }
     redirectCache.set(tabId, { url: targetUrl, time: Date.now() });
 
-    // Verify if auto-format is active (default is true on install)
     chrome.storage.local.get(['autoFormatXml'], (data) => {
-      const isAutoFormatActive = data.autoFormatXml !== false;
-      if (isAutoFormatActive) {
+      if (data.autoFormatXml !== false) {
         const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(targetUrl)}&autoformat=1`);
         chrome.tabs.update(tabId, { url: studioUrl });
       }
@@ -123,7 +148,12 @@ chrome.contextMenus?.onClicked.addListener((info, tab) => {
 // Extension message listener (CORS proxy fetcher & configuration status)
 chrome.runtime?.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'FETCH_XML_URL') {
-    fetch(request.url)
+    let fetchUrl = (request.url || '').trim();
+    if (!/^https?:\/\//i.test(fetchUrl) && !fetchUrl.startsWith('file://')) {
+      fetchUrl = 'https://' + fetchUrl;
+    }
+
+    fetch(fetchUrl)
       .then(async (res) => {
         if (!res.ok) {
           throw new Error(`HTTP Error ${res.status}: ${res.statusText}`);

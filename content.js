@@ -1,39 +1,68 @@
 /**
  * XML Pro Toolkit - Content Script
- * Automatically detects XML pages/links and facilitates instant auto-formatting.
+ * Intercepts XML link clicks and formats XML pages directly.
  */
 
 (function () {
-  // Prevent execution on extension pages or invalid contexts
   if (typeof window === 'undefined' || !window.location) return;
   if (window.location.protocol === 'chrome-extension:' || window.location.protocol === 'about:') return;
 
   const currentHref = window.location.href;
   const isRawRequested = currentHref.includes('raw=true') || currentHref.includes('raw=1') || currentHref.includes('noformat=1');
 
-  // Detect whether document is XML
-  const contentType = (document.contentType || '').toLowerCase();
-  const isXmlContentType = contentType.includes('xml') || contentType.includes('rss') || contentType.includes('atom');
-  const isXmlUrl = /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(currentHref);
-  const isNonHtmlRoot = document.documentElement && document.documentElement.tagName && document.documentElement.tagName.toLowerCase() !== 'html';
+  // Helper to determine XML document
+  function isXmlDocument() {
+    const contentType = (document.contentType || '').toLowerCase();
+    if (contentType.includes('xml') || contentType.includes('rss') || contentType.includes('atom')) {
+      return true;
+    }
+    if (/\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(currentHref)) {
+      return true;
+    }
+    if (document.documentElement && document.documentElement.tagName && document.documentElement.tagName.toLowerCase() !== 'html') {
+      return true;
+    }
+    return false;
+  }
 
-  const isXmlDocument = isXmlContentType || isXmlUrl || isNonHtmlRoot;
+  // 1. Intercept in-page XML link clicks
+  document.addEventListener('click', (e) => {
+    const anchor = e.target && e.target.closest ? e.target.closest('a') : null;
+    if (!anchor || !anchor.href) return;
 
-  if (!isXmlDocument) return;
+    const href = anchor.href;
+    const isXmlLink = /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(href);
+    const isRaw = href.includes('raw=true') || href.includes('raw=1') || href.includes('noformat=1');
 
-  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local && chrome.runtime) {
-    chrome.storage.local.get(['autoFormatXml'], (res) => {
-      // Auto-format is enabled by default upon install
-      const isAutoFormatEnabled = res.autoFormatXml !== false;
+    if (isXmlLink && !isRaw && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['autoFormatXml'], (res) => {
+        if (res.autoFormatXml !== false) {
+          e.preventDefault();
+          const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(href)}&autoformat=1`);
+          if (anchor.target === '_blank' || e.ctrlKey || e.metaKey) {
+            window.open(studioUrl, '_blank');
+          } else {
+            window.location.href = studioUrl;
+          }
+        }
+      });
+    }
+  }, true);
 
-      if (isAutoFormatEnabled && !isRawRequested) {
-        const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(currentHref)}&autoformat=1`);
-        window.location.replace(studioUrl);
-      } else if (isRawRequested) {
-        // User requested raw view: inject a floating button to allow one-click formatting
-        injectFloatingFormatButton();
-      }
-    });
+  // 2. Format current page if it is an XML document
+  if (isXmlDocument()) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local && chrome.runtime) {
+      chrome.storage.local.get(['autoFormatXml'], (res) => {
+        const isAutoFormatEnabled = res.autoFormatXml !== false;
+
+        if (isAutoFormatEnabled && !isRawRequested) {
+          const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(currentHref)}&autoformat=1`);
+          window.location.replace(studioUrl);
+        } else if (isRawRequested) {
+          injectFloatingFormatButton();
+        }
+      });
+    }
   }
 
   function injectFloatingFormatButton() {
