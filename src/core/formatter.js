@@ -153,3 +153,4 @@ function fallbackFormatXml(xml, indent) {
 
   return formatted.trim();
 }
+

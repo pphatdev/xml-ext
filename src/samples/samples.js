@@ -123,7 +123,7 @@ export const XML_SAMPLES = {
     XML Pro Studio
   </text>
   <text x="200" y="225" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">
-    Editor • Linter • Tree • Converter
+    Editor | Linter | Tree | Converter
   </text>
 </svg>`
   },
@@ -178,3 +178,4 @@ export const XML_SAMPLES = {
 </soap:Envelope>`
   }
 };
+

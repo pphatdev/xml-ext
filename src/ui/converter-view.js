@@ -21,11 +21,11 @@ export class XmlConverterView {
       <div class="converter-wrapper">
         <div class="converter-toolbar">
           <div class="converter-format-tabs">
-            <button type="button" class="tab-btn active" data-target="json">XML → JSON</button>
-            <button type="button" class="tab-btn" data-target="txt">XML → TXT</button>
-            <button type="button" class="tab-btn" data-target="csv">XML → CSV</button>
-            <button type="button" class="tab-btn" data-target="yaml">XML → YAML</button>
-            <button type="button" class="tab-btn" data-target="json2xml">JSON → XML</button>
+            <button type="button" class="tab-btn active" data-target="json">XML to JSON</button>
+            <button type="button" class="tab-btn" data-target="txt">XML to TXT</button>
+            <button type="button" class="tab-btn" data-target="csv">XML to CSV</button>
+            <button type="button" class="tab-btn" data-target="yaml">XML to YAML</button>
+            <button type="button" class="tab-btn" data-target="json2xml">JSON to XML</button>
           </div>
           <div class="converter-actions">
             <button type="button" id="btn-copy-converted" class="btn-sm" title="Copy converted content">
@@ -42,7 +42,7 @@ export class XmlConverterView {
               Download
             </button>
             <button type="button" id="btn-load-converted-to-editor" class="btn-sm hidden" title="Load XML to Main Editor">
-              Load Into Editor →
+              Load Into Editor
             </button>
           </div>
         </div>
@@ -232,3 +232,4 @@ export class XmlConverterView {
     showToast(`Downloaded converted.${targetInfo.ext}`, 'success');
   }
 }
+

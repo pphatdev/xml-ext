@@ -206,7 +206,7 @@ export class App {
     const badge = document.getElementById('validation-badge');
     if (!xml || !xml.trim()) {
       badge.className = 'val-badge val-badge-empty';
-      badge.textContent = 'Empty';
+      badge.innerHTML = '<span>Empty</span>';
       badge.title = 'No XML content loaded';
       return;
     }
@@ -214,11 +214,21 @@ export class App {
     const valResult = validateXml(xml);
     if (valResult.valid) {
       badge.className = 'val-badge val-badge-valid';
-      badge.textContent = '✓ Valid XML';
+      badge.innerHTML = `
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span>Valid XML</span>
+      `;
       badge.title = valResult.summary;
     } else {
       badge.className = 'val-badge val-badge-invalid';
-      badge.textContent = `✕ ${valResult.errors.length} Error${valResult.errors.length === 1 ? '' : 's'}`;
+      badge.innerHTML = `
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>${valResult.errors.length} Error${valResult.errors.length === 1 ? '' : 's'}</span>
+      `;
       badge.title = valResult.errors.map(e => `Ln ${e.line}:${e.column}: ${e.message}`).join('\n');
     }
   }
@@ -366,3 +376,4 @@ document.addEventListener('DOMContentLoaded', () => {
   app.init();
   window.__XML_APP__ = app;
 });
+

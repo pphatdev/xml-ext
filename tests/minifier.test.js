@@ -23,3 +23,4 @@ Deno.test('Minify preserves CDATA', () => {
   const minified = minifyXml(xml);
   assert(minified.includes('<![CDATA[   Spaces   Kept   ]]>'), 'CDATA contents should be preserved');
 });
+

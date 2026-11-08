@@ -200,3 +200,4 @@ function summarize(issues) {
   }
   return { errors, warnings, infos, total: issues.length };
 }
+

@@ -214,3 +214,4 @@ export function analyzeXml(xmlString) {
 
   return result;
 }
+

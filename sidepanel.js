@@ -125,3 +125,4 @@ document.addEventListener('DOMContentLoaded', () => {
   <info>Select text on web page or edit XML here</info>
 </root>`, true);
 });
+

@@ -86,7 +86,11 @@ export class XmlTreeView {
       const isMatch = this.searchQuery && node.text.toLowerCase().includes(this.searchQuery);
       nodeEl.innerHTML = `
         <div class="tree-node-row tree-leaf ${isMatch ? 'highlight-match' : ''}">
-          <span class="tree-bullet">•</span>
+          <span class="tree-node-icon">
+            <svg class="icon-tiny" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 1a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 000 2h5a1 1 0 100-2H6z" clip-rule="evenodd"/>
+            </svg>
+          </span>
           <span class="tree-text-content">"${escapeHtml(node.text)}"</span>
           <button type="button" class="btn-copy-xpath" title="Copy XPath" data-xpath="${escapeHtml(node.xpath)}">XPath</button>
         </div>
@@ -108,7 +112,11 @@ export class XmlTreeView {
     if (node.type === 'comment') {
       nodeEl.innerHTML = `
         <div class="tree-node-row tree-comment">
-          <span class="tree-bullet">•</span>
+          <span class="tree-node-icon">
+            <svg class="icon-tiny" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+            </svg>
+          </span>
           <span class="tree-comment-content">&lt;!-- ${escapeHtml(node.text)} --&gt;</span>
         </div>
       `;
@@ -133,9 +141,15 @@ export class XmlTreeView {
 
     let toggleHtml = '';
     if (hasChildren) {
-      toggleHtml = `<button type="button" class="tree-toggle ${shouldExpand ? 'expanded' : ''}">▶</button>`;
+      toggleHtml = `
+        <button type="button" class="tree-toggle ${shouldExpand ? 'expanded' : ''}" aria-label="Toggle node">
+          <svg class="icon-toggle" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      `;
     } else {
-      toggleHtml = `<span class="tree-toggle-placeholder">•</span>`;
+      toggleHtml = `<span class="tree-toggle-placeholder"></span>`;
     }
 
     // Attributes HTML
@@ -228,3 +242,4 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+

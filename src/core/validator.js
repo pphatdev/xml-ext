@@ -95,3 +95,4 @@ function checkRawEntities(xmlString, warnings) {
     }
   }
 }
+

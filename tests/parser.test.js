@@ -48,3 +48,4 @@ Deno.test('Parse tolerant mode captures errors', () => {
   const result = parseXml(xml, { tolerant: true });
   assert(result.errors.length > 0, 'Should have errors in tolerant mode');
 });
+

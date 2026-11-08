@@ -27,3 +27,4 @@ Deno.test('Analyze XML metrics and distribution', () => {
   assertEquals(result.elementFrequency[0].tag, 'book'); // book or author/title/price tied
   assert(result.complexity.score > 0, 'Complexity score computed');
 });
+

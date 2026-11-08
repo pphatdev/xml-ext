@@ -34,3 +34,4 @@ Deno.test('Lint declaration not on first line', () => {
   const declIssue = result.issues.find(i => i.rule === 'xml-decl-first-line');
   assert(declIssue !== undefined, 'Should detect XML decl not on line 1 col 1');
 });
+

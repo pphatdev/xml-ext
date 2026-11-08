@@ -37,3 +37,4 @@ export function showToast(message, type = 'info', duration = 3000) {
     });
   }, duration);
 }
+

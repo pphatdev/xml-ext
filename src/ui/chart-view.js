@@ -271,3 +271,4 @@ function escapeXml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+

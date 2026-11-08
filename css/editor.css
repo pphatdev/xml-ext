@@ -162,6 +162,10 @@
 }
 
 .status-divider {
-  color: var(--border-color);
-  font-size: 0.6rem;
+  width: 1px;
+  height: 12px;
+  background-color: var(--border-color);
+  margin: 0 0.25rem;
+  display: inline-block;
 }
+

@@ -4,7 +4,7 @@ A fast, comprehensive, client-side **XML Extension & Workbench** built with mode
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Editor**:
   - Full code editor with dynamic line numbers, indent guides, and status bar (line, column, bytes).
@@ -47,7 +47,7 @@ A fast, comprehensive, client-side **XML Extension & Workbench** built with mode
 
 ---
 
-## 🎨 Supported Formats
+## Supported Formats
 
 | Format | Description |
 |---|---|
@@ -59,7 +59,7 @@ A fast, comprehensive, client-side **XML Extension & Workbench** built with mode
 
 ---
 
-## 📦 Extension Modes
+## Extension Modes
 
 This project runs in 3 modes:
 1. **Full Studio Tab** (`index.html`): Complete split-pane IDE and multi-format workbench.
@@ -68,14 +68,14 @@ This project runs in 3 modes:
 
 ---
 
-## 🛠️ Installation & Usage
+## Installation & Usage
 
 ### 1. Load as an Unpacked Extension (Chrome, Edge, Brave, Chromium)
 1. Open your browser and navigate to `chrome://extensions` (or `edge://extensions`).
 2. Enable **Developer mode** (toggle in the top-right corner).
 3. Click **Load unpacked**.
 4. Select this directory: `/home/pphat/Projects/extensions/xml-ext`.
-5. The **XML Pro Toolkit** icon will appear in your extensions toolbar! Click it to open the popup, or click **Full Studio ↗** to open the complete workbench.
+5. The **XML Pro Toolkit** icon will appear in your extensions toolbar! Click it to open the popup, or click **Full Studio** to open the complete workbench.
 
 ### 2. Run Standalone in Browser
 No build step or node_modules required! You can serve it with any static server:
@@ -91,7 +91,7 @@ Then visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Testing
+## Testing
 
 The core parser, validator, linter, analyzer, minifier, formatter, sitemap generator, and converters include a full unit test suite:
 
@@ -103,7 +103,7 @@ All 29 tests run and pass in ~400ms without any external network dependencies.
 
 ---
 
-## 📁 Project Architecture
+## Project Architecture
 
 ```
 xml-ext/
@@ -166,7 +166,7 @@ xml-ext/
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## Keyboard Shortcuts
 
 | Shortcut | Action |
 |---|---|
@@ -179,6 +179,7 @@ xml-ext/
 
 ---
 
-## 📄 License
+## License
 
 MIT
+

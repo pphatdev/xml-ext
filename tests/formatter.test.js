@@ -18,3 +18,4 @@ Deno.test('Format preserves declaration and comments', () => {
   assert(formatted.startsWith('<?xml version="1.0" encoding="UTF-8"?>'), 'Declaration should be at top');
   assert(formatted.includes('<!-- Comment -->'), 'Comment preserved');
 });
+

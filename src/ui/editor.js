@@ -26,11 +26,23 @@ export class XmlEditor {
           </div>
           <div class="search-actions">
             <span id="search-count" class="search-count">0 of 0</span>
-            <button type="button" id="btn-find-prev" class="btn-icon" title="Previous match">↑</button>
-            <button type="button" id="btn-find-next" class="btn-icon" title="Next match">↓</button>
+            <button type="button" id="btn-find-prev" class="btn-icon" title="Previous match">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+            <button type="button" id="btn-find-next" class="btn-icon" title="Next match">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </button>
             <button type="button" id="btn-replace" class="btn-sm">Replace</button>
             <button type="button" id="btn-replace-all" class="btn-sm">All</button>
-            <button type="button" id="btn-close-search" class="btn-icon" title="Close">✕</button>
+            <button type="button" id="btn-close-search" class="btn-icon" title="Close">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -52,14 +64,14 @@ export class XmlEditor {
         <div class="editor-status-bar">
           <div class="status-left">
             <span id="status-cursor">Ln 1, Col 1</span>
-            <span class="status-divider">•</span>
+            <span class="status-divider"></span>
             <span id="status-lines">1 lines</span>
-            <span class="status-divider">•</span>
+            <span class="status-divider"></span>
             <span id="status-size">0 B</span>
           </div>
           <div class="status-right">
             <span id="status-format">XML 1.0</span>
-            <span class="status-divider">•</span>
+            <span class="status-divider"></span>
             <span>UTF-8</span>
           </div>
         </div>
@@ -348,3 +360,4 @@ function formatBytes(bytes) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
+

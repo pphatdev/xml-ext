@@ -87,7 +87,14 @@ export class XmlLinterView {
     });
 
     if (filtered.length === 0) {
-      this.listEl.innerHTML = `<div class="linter-empty-state success">✓ No issues found under "${this.currentFilter}" filter!</div>`;
+      this.listEl.innerHTML = `
+        <div class="linter-empty-state success">
+          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          No issues found under "${this.currentFilter}" filter!
+        </div>
+      `;
       return;
     }
 
@@ -102,10 +109,16 @@ export class XmlLinterView {
         </div>
         <div class="issue-content">
           <div class="issue-msg">${escapeHtml(issue.message)}</div>
-          ${issue.suggestion ? `<div class="issue-suggestion">💡 ${escapeHtml(issue.suggestion)}</div>` : ''}
+          ${issue.suggestion ? `
+            <div class="issue-suggestion">
+              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14H8v-1a4 4 0 114 0v1z"/>
+              </svg>
+              <span>${escapeHtml(issue.suggestion)}</span>
+            </div>` : ''}
         </div>
         <div class="issue-action">
-          <button type="button" class="btn-jump">Jump →</button>
+          <button type="button" class="btn-jump">Jump</button>
         </div>
       `;
 
@@ -125,3 +138,4 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+

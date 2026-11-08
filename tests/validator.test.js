@@ -32,3 +32,4 @@ Deno.test('Validate unescaped ampersands gives warning', () => {
   const result = validateXml(xml);
   assert(result.warnings.length > 0);
 });
+
