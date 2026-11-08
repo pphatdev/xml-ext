@@ -781,6 +781,67 @@ body {
   letter-spacing: 0.05em;
 }
 
+/* Multi-Format Editor Header & Tabs */
+.editor-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.editor-format-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  overflow-x: auto;
+}
+
+.editor-format-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 0.25rem 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.editor-format-tab:hover {
+  color: var(--text-normal);
+  background-color: var(--bg-hover);
+}
+
+.editor-format-tab.active {
+  color: #fff;
+  background-color: var(--bg-hover);
+  border-color: var(--border-light);
+  font-weight: 600;
+}
+
+.editor-pane-meta {
+  display: flex;
+  align-items: center;
+}
+
+.editor-format-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--primary);
+  background-color: var(--primary-light);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .workbench-tabs {
   display: flex;
   gap: 0.2rem;

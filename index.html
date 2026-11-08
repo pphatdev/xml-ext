@@ -185,10 +185,36 @@
 
   <!-- Workbench Split Layout -->
   <main class="workbench-layout" data-mobile-pane="editor">
-    <!-- Left Pane: Editor -->
+    <!-- Left Pane: Editor with Multi-Format Support (XML, JSON, YAML, TXT, CSV) -->
     <section class="workbench-pane left-pane">
-      <div class="pane-header">
-        <span class="pane-title">XML Source Editor</span>
+      <div class="pane-header editor-pane-header">
+        <div class="editor-format-tabs" id="editor-format-tabs">
+          <button type="button" class="editor-format-tab active" data-format="xml" title="XML Document">
+            <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+            <span>XML</span>
+          </button>
+          <button type="button" class="editor-format-tab" data-format="json" title="JSON Object">
+            <img src="icons/json.png" class="tab-format-icon" alt="JSON" />
+            <span>JSON</span>
+          </button>
+          <button type="button" class="editor-format-tab" data-format="yaml" title="YAML Document">
+            <img src="icons/yaml.png" class="tab-format-icon" alt="YAML" />
+            <span>YAML</span>
+          </button>
+          <button type="button" class="editor-format-tab" data-format="txt" title="Plain Text">
+            <img src="icons/txt.png" class="tab-format-icon" alt="TXT" />
+            <span>TXT</span>
+          </button>
+          <button type="button" class="editor-format-tab" data-format="csv" title="CSV Table">
+            <img src="icons/csv.png" class="tab-format-icon" alt="CSV" />
+            <span>CSV</span>
+          </button>
+        </div>
+        <div class="editor-pane-meta">
+          <span class="editor-format-badge" id="editor-active-format-badge">XML</span>
+        </div>
       </div>
       <div class="pane-content" id="editor-container"></div>
     </section>

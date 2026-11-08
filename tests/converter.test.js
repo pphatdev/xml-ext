@@ -7,7 +7,12 @@ import {
   xmlToCardFlowData,
   xmlToTxt,
   xmlToCsv,
-  xmlToYaml
+  xmlToYaml,
+  csvToXml,
+  yamlToJson,
+  yamlToXml,
+  txtToXml,
+  detectFormat
 } from '../src/core/converter.js';
 
 Deno.test('XML to JSON conversion (clean mode)', () => {
@@ -138,5 +143,70 @@ Deno.test('XML to YAML conversion', () => {
   assert(yaml.includes('app:'));
   assert(yaml.includes('name: SuperApp'));
   assert(yaml.includes('port: 8080'));
+});
+
+Deno.test('CSV to XML conversion', () => {
+  const csv = `name,price,category\nLaptop,999.99,Electronics\nT-shirt,19.99,Clothing`;
+  const xml = csvToXml(csv);
+  assert(xml.includes('<records>'));
+  assert(xml.includes('<name>Laptop</name>'));
+  assert(xml.includes('<price>999.99</price>'));
+  assert(xml.includes('<category>Clothing</category>'));
+});
+
+Deno.test('YAML to JSON and XML conversion', () => {
+  const yaml = `project:\n  name: xml-ext\n  version: 1.0\n  tags:\n    - dev\n    - web`;
+  const json = yamlToJson(yaml);
+  assertEquals(json.project.name, 'xml-ext');
+  assertEquals(json.project.version, 1.0);
+  assertEquals(json.project.tags.length, 2);
+
+  const xml = yamlToXml(yaml);
+  assert(xml.includes('<project>'));
+  assert(xml.includes('<name>xml-ext</name>'));
+});
+
+Deno.test('TXT to XML conversion', () => {
+  const txt = `First line\nSecond line`;
+  const xml = txtToXml(txt);
+  assert(xml.includes('<document>'));
+  assert(xml.includes('<line>First line</line>'));
+  assert(xml.includes('<line>Second line</line>'));
+});
+
+Deno.test('Auto-detect data formats', () => {
+  assertEquals(detectFormat('<root><test/></root>'), 'xml');
+  assertEquals(detectFormat('{"active": true}'), 'json');
+  assertEquals(detectFormat('[1, 2, 3]'), 'json');
+  assertEquals(detectFormat('name,age\nAlice,30\nBob,25'), 'csv');
+  assertEquals(detectFormat('title: Hello\nauthor: Antigravity'), 'yaml');
+  assertEquals(detectFormat('Just plain unstructured sentences.'), 'txt');
+});
+
+Deno.test('Multi-format roundtrips: XML to YAML and back', () => {
+  const xml = `<service><name>AuthAPI</name><port>3000</port></service>`;
+  const yaml = xmlToYaml(xml);
+  const backToXml = yamlToXml(yaml);
+  assert(backToXml.includes('<service>'));
+  assert(backToXml.includes('<name>AuthAPI</name>'));
+  assert(backToXml.includes('<port>3000</port>'));
+});
+
+Deno.test('Multi-format roundtrips: CSV to XML and back', () => {
+  const csv = `product,price\nWidget,12.5\nGadget,45`;
+  const xml = csvToXml(csv);
+  const backToCsv = xmlToCsv(xml);
+  assert(backToCsv.includes('product'));
+  assert(backToCsv.includes('price'));
+  assert(backToCsv.includes('Widget'));
+  assert(backToCsv.includes('12.5'));
+});
+
+Deno.test('Multi-format roundtrips: TXT to XML and back', () => {
+  const txt = `Intro paragraph\nSecond line details`;
+  const xml = txtToXml(txt);
+  const backToTxt = xmlToTxt(xml);
+  assert(backToTxt.includes('Intro paragraph'));
+  assert(backToTxt.includes('Second line details'));
 });
 

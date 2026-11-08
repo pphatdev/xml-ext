@@ -735,3 +735,223 @@ function escapeXml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 }
+
+/**
+ * Converts CSV text into XML representation
+ * @param {string} csvString
+ * @param {object} [options]
+ * @returns {string} XML string
+ */
+export function csvToXml(csvString, options = {}) {
+  const { rootTag = 'records', rowTag = 'item', delimiter = ',' } = options;
+  if (!csvString || !csvString.trim()) return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootTag}/>`;
+
+  const lines = csvString.trim().split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (lines.length === 0) return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootTag}/>`;
+
+  function parseCsvLine(line, delim) {
+    const fields = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === delim && !inQuotes) {
+        fields.push(cur);
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    fields.push(cur);
+    return fields;
+  }
+
+  // Detect delimiter if not strictly specified
+  const firstLine = lines[0];
+  let actualDelim = delimiter;
+  if (delimiter === ',' && !firstLine.includes(',') && (firstLine.includes('\t') || firstLine.includes(';'))) {
+    actualDelim = firstLine.includes('\t') ? '\t' : ';';
+  }
+
+  const rawHeaders = parseCsvLine(lines[0], actualDelim);
+  const cleanHeaders = rawHeaders.map((h, i) => {
+    let clean = h.trim().replace(/^@/, '').replace(/[^a-zA-Z0-9_.-]/g, '_');
+    if (!clean || !/^[a-zA-Z_]/.test(clean)) {
+      clean = `col_${i + 1}`;
+    }
+    return clean;
+  });
+
+  const rowXmls = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCsvLine(lines[i], actualDelim);
+    const colXmls = cleanHeaders.map((header, colIdx) => {
+      const val = (values[colIdx] || '').trim();
+      return `    <${header}>${escapeXml(val)}</${header}>`;
+    });
+    rowXmls.push(`  <${rowTag} id="${i}">\n${colXmls.join('\n')}\n  </${rowTag}>`);
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootTag}>\n${rowXmls.join('\n')}\n</${rootTag}>`;
+}
+
+/**
+ * Converts YAML text into JavaScript object/JSON
+ * @param {string} yamlString
+ * @returns {object} Parsed JSON structure
+ */
+export function yamlToJson(yamlString) {
+  if (!yamlString || !yamlString.trim()) return {};
+  const lines = yamlString.split(/\r?\n/);
+
+  function parseLines(startIdx, minIndent) {
+    let obj = null;
+    let arr = null;
+    let i = startIdx;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      if (/^\s*(#|$)/.test(line)) {
+        i++;
+        continue;
+      }
+
+      const indent = line.search(/\S/);
+      if (indent < minIndent) break;
+
+      const trimmed = line.trim();
+
+      // List item
+      if (trimmed.startsWith('- ')) {
+        if (!arr) arr = [];
+        const content = trimmed.slice(2).trim();
+        if (content.includes(': ') || content.endsWith(':')) {
+          const fakeLine = ' '.repeat(indent + 2) + content;
+          const oldLine = lines[i];
+          lines[i] = fakeLine;
+          const [subObj, nextI] = parseLines(i, indent + 2);
+          lines[i] = oldLine;
+          arr.push(subObj);
+          i = nextI;
+          continue;
+        } else {
+          arr.push(parseYamlValue(content));
+          i++;
+          continue;
+        }
+      }
+
+      // Key-value pair
+      const colonIdx = trimmed.indexOf(':');
+      if (colonIdx > 0) {
+        if (!obj) obj = {};
+        const key = trimmed.slice(0, colonIdx).trim().replace(/^['"]|['"]$/g, '');
+        const valStr = trimmed.slice(colonIdx + 1).trim();
+
+        if (valStr === '' || valStr.startsWith('#')) {
+          const [subVal, nextI] = parseLines(i + 1, indent + 1);
+          obj[key] = subVal !== null ? subVal : {};
+          i = nextI;
+          continue;
+        } else {
+          obj[key] = parseYamlValue(valStr);
+          i++;
+          continue;
+        }
+      }
+
+      i++;
+    }
+
+    return [arr !== null ? arr : (obj !== null ? obj : {}), i];
+  }
+
+  function parseYamlValue(val) {
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    if (val === 'null' || val === '~') return null;
+    if (!isNaN(val) && val !== '' && !val.includes(' ') && !/^0[0-9]+/.test(val)) {
+      return Number(val);
+    }
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      return val.slice(1, -1);
+    }
+    return val;
+  }
+
+  const [result] = parseLines(0, 0);
+  return result;
+}
+
+/**
+ * Converts YAML text into XML representation
+ * @param {string} yamlString
+ * @param {object} [options]
+ * @returns {string} XML string
+ */
+export function yamlToXml(yamlString, options = {}) {
+  const { rootTag = 'root' } = options;
+  const json = yamlToJson(yamlString);
+  return jsonToXml(json, { rootTag });
+}
+
+/**
+ * Converts Plain Text into XML representation
+ * @param {string} txtString
+ * @param {object} [options]
+ * @returns {string} XML string
+ */
+export function txtToXml(txtString, options = {}) {
+  const { rootTag = 'document' } = options;
+  if (!txtString || !txtString.trim()) return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootTag}/>`;
+  const lines = txtString.trim().split(/\r?\n/);
+  const lineNodes = lines.map(line => `  <line>${escapeXml(line)}</line>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootTag}>\n${lineNodes}\n</${rootTag}>`;
+}
+
+/**
+ * Auto-detects data format: 'xml' | 'json' | 'yaml' | 'csv' | 'txt'
+ * @param {string} text
+ * @returns {'xml'|'json'|'yaml'|'csv'|'txt'}
+ */
+export function detectFormat(text) {
+  if (!text || !text.trim()) return 'xml';
+  const trimmed = text.trim();
+
+  // 1. XML check: starts with <
+  if (trimmed.startsWith('<')) {
+    return 'xml';
+  }
+
+  // 2. JSON check: starts with { or [
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      JSON.parse(trimmed);
+      return 'json';
+    } catch (_) {}
+  }
+
+  // 3. CSV check: multiple lines with consistent commas, semicolons, or tabs
+  const lines = trimmed.split('\n').filter(l => l.trim().length > 0);
+  if (lines.length >= 2) {
+    const commaCount0 = (lines[0].match(/,/g) || []).length;
+    const commaCount1 = (lines[1].match(/,/g) || []).length;
+    if (commaCount0 > 0 && commaCount0 === commaCount1) {
+      return 'csv';
+    }
+  }
+
+  // 4. YAML check: key: value structure
+  if (/^[a-zA-Z0-9_-]+\s*:\s*.+/m.test(trimmed) || /^\s*-\s+.+/m.test(trimmed)) {
+    return 'yaml';
+  }
+
+  return 'txt';
+}

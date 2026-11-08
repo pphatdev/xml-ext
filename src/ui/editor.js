@@ -7,6 +7,7 @@ export class XmlEditor {
   constructor(containerEl, options = {}) {
     this.container = containerEl;
     this.onChange = options.onChange || (() => {});
+    this.currentFormat = options.format || 'xml';
     this.history = [];
     this.historyIndex = -1;
     this.maxHistory = 100;
@@ -87,6 +88,36 @@ export class XmlEditor {
     this.cursorStatus = this.container.querySelector('#status-cursor');
     this.linesStatus = this.container.querySelector('#status-lines');
     this.sizeStatus = this.container.querySelector('#status-size');
+    this.formatStatus = this.container.querySelector('#status-format');
+  }
+
+  setFormat(format) {
+    this.currentFormat = format || 'xml';
+    const formatLabels = {
+      xml: 'XML 1.0',
+      json: 'JSON',
+      yaml: 'YAML 1.2',
+      txt: 'Plain Text',
+      csv: 'CSV Table'
+    };
+    const placeholders = {
+      xml: 'Paste or type XML here, or drag & drop a file...',
+      json: 'Paste or type JSON here, or drag & drop a .json file...',
+      yaml: 'Paste or type YAML here, or drag & drop a .yaml file...',
+      txt: 'Paste or type plain text here, or drag & drop a .txt file...',
+      csv: 'Paste or type CSV table data here, or drag & drop a .csv file...'
+    };
+
+    if (this.formatStatus) {
+      this.formatStatus.textContent = formatLabels[this.currentFormat] || this.currentFormat.toUpperCase();
+    }
+    if (this.textarea) {
+      this.textarea.placeholder = placeholders[this.currentFormat] || placeholders.xml;
+    }
+  }
+
+  getFormat() {
+    return this.currentFormat;
   }
 
   initEvents() {
