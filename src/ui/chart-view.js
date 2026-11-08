@@ -72,30 +72,26 @@ export class XmlChartView {
             </button>
           </div>
           <div class="chart-actions">
-            <button type="button" id="btn-chart-copy-mermaid" class="btn-sm hidden" title="Copy Mermaid syntax code">
+            <button type="button" id="btn-chart-copy-mermaid" class="btn-sm hidden" title="Copy Mermaid syntax code" aria-label="Copy Mermaid syntax code">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
                 <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
               </svg>
-              Copy Mermaid
             </button>
             <button type="button" id="btn-chart-expand-all" class="btn-sm" title="Expand all nodes">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/>
               </svg>
-              Expand All
             </button>
             <button type="button" id="btn-chart-collapse-all" class="btn-sm" title="Collapse all nodes">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd"/>
               </svg>
-              Collapse All
             </button>
             <button type="button" id="btn-chart-fit" class="btn-sm" title="Fit diagram to screen (auto-center and scale)">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 7V3h4m10 4V3h-4M3 13v4h4m10-4v4h-4"/>
               </svg>
-              Fit View
             </button>
             <button type="button" id="btn-export-svg" class="btn-sm" title="Export as SVG image">
               <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">

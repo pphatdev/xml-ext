@@ -106,7 +106,12 @@ export class SitemapModal {
             <div class="preview-header">
               <span class="preview-title">Generated sitemap.xml</span>
               <div class="preview-actions">
-                <button type="button" id="btn-copy-sitemap" class="btn-sm">Copy XML</button>
+                <button type="button" id="btn-copy-sitemap" class="btn-sm" title="Copy sitemap XML" aria-label="Copy sitemap XML">
+                  <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                  </svg>
+                </button>
                 <button type="button" id="btn-download-sitemap" class="btn-sm">Download</button>
                 <button type="button" id="btn-load-into-editor" class="btn-primary btn-sm">Load Into Editor</button>
               </div>

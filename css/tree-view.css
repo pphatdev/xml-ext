@@ -210,14 +210,16 @@
 
 .btn-copy-xpath {
   opacity: 0;
-  font-size: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
-  border-radius: 3px;
-  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  padding: 0.15rem 0.25rem;
   cursor: pointer;
-  transition: opacity 0.15s, background-color 0.15s;
+  transition: opacity 0.15s, background-color 0.15s, color 0.15s;
   margin-left: 0.5rem;
 }
 
