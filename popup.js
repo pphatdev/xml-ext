@@ -11,6 +11,7 @@ import { XmlEditor } from './src/ui/editor.js';
 import { XmlTreeView } from './src/ui/tree-view.js';
 import { XmlChartView } from './src/ui/chart-view.js';
 import { XML_SAMPLES } from './src/samples/samples.js';
+import { fetchXmlFromUrl } from './src/core/fetcher.js';
 import { showToast } from './src/ui/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,6 +96,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   editor.setValue(initialXml, true);
   updateStatus();
+
+  // If active tab is viewing an XML link, auto-format fields from active tab
+  if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      const currentTab = tabs[0];
+      if (currentTab && currentTab.url && /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(currentTab.url)) {
+        try {
+          const res = await fetchXmlFromUrl(currentTab.url);
+          if (res && res.text) {
+            const formatted = formatXml(res.text, { indent: '  ', preserveComments: true, entities: 'auto' });
+            editor.setValue(formatted, true);
+            updateStatus();
+            showToast('Auto-formatted active tab XML', 'success');
+          }
+        } catch (_e) {}
+      }
+    });
+  }
 
   // Header Actions
   document.getElementById('btn-popup-open-full').addEventListener('click', () => {

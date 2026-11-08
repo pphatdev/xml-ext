@@ -56,3 +56,12 @@ Deno.test('Decode XML entities converts back to UTF-8 characters', () => {
   assert(decoded.includes('&amp;'), 'Syntax &amp; should remain safely escaped');
 });
 
+Deno.test('Format complex fields with nested tags and attributes', () => {
+  const xml = `<catalog><book id="bk101"><author>Gambardella, Matthew</author><title>XML Developer's Guide</title><genre>Computer</genre><price>44.95</price></book></catalog>`;
+  const formatted = formatXml(xml);
+  assert(formatted.includes('  <book id="bk101">'), 'Book tag formatted');
+  assert(formatted.includes('    <author>Gambardella, Matthew</author>'), 'Author field formatted');
+  assert(formatted.includes('    <price>44.95</price>'), 'Price field formatted');
+});
+
+

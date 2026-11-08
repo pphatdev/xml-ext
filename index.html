@@ -45,6 +45,12 @@
         </select>
       </div>
 
+      <button type="button" id="btn-toggle-autoformat" class="btn-icon active" title="Auto-format .xml links: Active (Click to toggle)" aria-label="Auto-format .xml links">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
       <a href="docs.html" class="btn-secondary btn-sm" title="Documentation & Markdown Notes" style="text-decoration: none;">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
           <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
@@ -194,6 +200,27 @@
       </svg>
       Split
     </button>
+  </div>
+
+  <!-- XML Source URL Banner (shown when auto-formatting or loading from URL) -->
+  <div id="xml-source-banner" class="xml-source-banner hidden">
+    <div class="source-banner-left">
+      <span class="source-badge">Auto-Formatted</span>
+      <span id="source-url-text" class="source-url-text" title=""></span>
+    </div>
+    <div class="source-banner-right">
+      <a id="btn-view-raw-source" href="#" target="_blank" class="btn-secondary btn-sm" title="View raw unformatted source">View Raw</a>
+      <button type="button" id="btn-reload-source" class="btn-secondary btn-sm" title="Reload from source URL" aria-label="Reload from source URL">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+      <button type="button" id="btn-close-source-banner" class="source-banner-btn" title="Dismiss banner" aria-label="Dismiss banner">
+        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Workbench Split Layout -->

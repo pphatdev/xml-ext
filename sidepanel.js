@@ -14,6 +14,7 @@ import { formatXml } from './src/core/formatter.js';
 import { minifyXml, getMinifyStats } from './src/core/minifier.js';
 import { validateXml } from './src/core/validator.js';
 import { XML_SAMPLES } from './src/samples/samples.js';
+import { fetchXmlFromUrl } from './src/core/fetcher.js';
 import { showToast } from './src/ui/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -246,6 +247,44 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Downloaded document.xml', 'success');
   });
 
+  // Import XML from Active Tab
+  const btnTabXml = document.getElementById('btn-sp-tab-xml');
+  if (btnTabXml) {
+    btnTabXml.addEventListener('click', async () => {
+      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+        chrome.tabs.query({ active: true, currentWindow: true }, async (activeTabs) => {
+          const currentTab = activeTabs[0];
+          if (!currentTab || !currentTab.url) {
+            showToast('No active tab found', 'warning');
+            return;
+          }
+
+          const tabUrl = currentTab.url;
+          const isXml = /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(tabUrl);
+
+          if (isXml) {
+            showToast(`Loading XML from ${tabUrl}...`, 'info');
+            try {
+              const res = await fetchXmlFromUrl(tabUrl);
+              let content = res.text;
+              try {
+                content = formatXml(content, { indent: '  ', preserveComments: true, entities: 'auto' });
+              } catch (_e) {}
+              editor.setValue(content, true);
+              showToast('Auto-formatted XML fields from active tab', 'success');
+            } catch (err) {
+              showToast(`Failed to load tab XML: ${err.message}`, 'error');
+            }
+          } else {
+            showToast('Active tab URL does not point to an .xml resource', 'info');
+          }
+        });
+      } else {
+        showToast('Tab API not available in current window', 'warning');
+      }
+    });
+  }
+
   // Clear
   document.getElementById('btn-sp-clear').addEventListener('click', () => {
     if (!editor.getValue().trim()) return;
@@ -255,13 +294,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initial content
-  const initialXml = XML_SAMPLES.ecommerce ? XML_SAMPLES.ecommerce.xml : `<?xml version="1.0" encoding="UTF-8"?>
+  // Initial content (or pending selection from context menu)
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['pendingSidepanelXml'], (res) => {
+      if (res && res.pendingSidepanelXml) {
+        let content = res.pendingSidepanelXml;
+        try {
+          content = formatXml(content, { indent: '  ', preserveComments: true, entities: 'auto' });
+        } catch (_e) {}
+        editor.setValue(content, true);
+        chrome.storage.local.remove(['pendingSidepanelXml']);
+        updateValidationBadge(editor.getValue());
+        showToast('Auto-formatted XML fields from selection', 'success');
+      } else {
+        const initialXml = XML_SAMPLES.ecommerce ? XML_SAMPLES.ecommerce.xml : `<?xml version="1.0" encoding="UTF-8"?>
 <root>
   <status>Side Panel Active</status>
   <info>Select text on web page or edit XML here</info>
 </root>`;
-
-  editor.setValue(initialXml, true);
-  updateValidationBadge(editor.getValue());
+        editor.setValue(initialXml, true);
+        updateValidationBadge(editor.getValue());
+      }
+    });
+  } else {
+    const initialXml = XML_SAMPLES.ecommerce ? XML_SAMPLES.ecommerce.xml : `<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <status>Side Panel Active</status>
+  <info>Select text on web page or edit XML here</info>
+</root>`;
+    editor.setValue(initialXml, true);
+    updateValidationBadge(editor.getValue());
+  }
 });

@@ -30,20 +30,34 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "permissions": [
     "storage",
     "sidePanel",
     "contextMenus",
-    "activeTab"
+    "activeTab",
+    "tabs"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
   "web_accessible_resources": [
     {
-      "resources": ["docs/*", "docs.html"],
+      "resources": [
+        "docs/*",
+        "docs.html",
+        "index.html",
+        "css/*",
+        "icons/*",
+        "src/*"
+      ],
       "matches": ["<all_urls>"]
     }
   ]
 }
-

@@ -1626,3 +1626,93 @@ body {
 .token-prompt { color: var(--tok-prompt); user-select: none; }
 .token-punct { color: var(--text-dim); }
 
+/* Auto-Format XML Links Toggle Button */
+#btn-toggle-autoformat {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+#btn-toggle-autoformat.active {
+  color: var(--primary);
+  background-color: var(--primary-light);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+#btn-toggle-autoformat:not(.active) {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+/* XML Source URL Banner (Auto-Formatted indicator) */
+.xml-source-banner {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.12));
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.4rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  animation: slide-down 0.2s ease-out;
+  z-index: 15;
+}
+
+.xml-source-banner.hidden {
+  display: none !important;
+}
+
+.source-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.source-badge {
+  background-color: var(--primary);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.source-url-text {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.source-banner-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.source-banner-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.source-banner-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-normal);
+  border-color: var(--border-color);
+}
+
+

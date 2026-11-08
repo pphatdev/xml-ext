@@ -13,6 +13,7 @@ import { XmlConverterView } from './ui/converter-view.js';
 import { SitemapModal } from './ui/sitemap-modal.js';
 import { UrlModal } from './ui/url-modal.js';
 import { XML_SAMPLES } from './samples/samples.js';
+import { fetchXmlFromUrl } from './core/fetcher.js';
 
 import { formatXml } from './core/formatter.js';
 import { minifyXml, getMinifyStats } from './core/minifier.js';
@@ -41,14 +42,173 @@ export class App {
     this.editorFormat = 'xml'; // 'xml' | 'json' | 'yaml' | 'txt' | 'csv'
   }
 
-  init() {
+  async init() {
     initTheme();
     this.initComponents();
     this.initEvents();
     this.initDragAndDrop();
+    this.initAutoFormatSettings();
 
-    // Load initial sample
+    // Check if opened from link (.xml) or query params
+    await this.handleInitialRoute();
+  }
+
+  initAutoFormatSettings() {
+    const toggleBtn = document.getElementById('btn-toggle-autoformat');
+    if (!toggleBtn) return;
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['autoFormatXml'], (res) => {
+        const isEnabled = res.autoFormatXml !== false;
+        this.updateAutoFormatButton(isEnabled);
+      });
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['autoFormatXml'], (res) => {
+          const newState = res.autoFormatXml === false ? true : false;
+          chrome.storage.local.set({ autoFormatXml: newState }, () => {
+            this.updateAutoFormatButton(newState);
+            showToast(`Auto-format for .xml links ${newState ? 'enabled' : 'disabled'}`, 'info');
+          });
+        });
+      } else {
+        const active = toggleBtn.classList.toggle('active');
+        this.updateAutoFormatButton(active);
+        showToast(`Auto-format for .xml links ${active ? 'enabled' : 'disabled'}`, 'info');
+      }
+    });
+  }
+
+  updateAutoFormatButton(isEnabled) {
+    const toggleBtn = document.getElementById('btn-toggle-autoformat');
+    if (!toggleBtn) return;
+
+    toggleBtn.classList.toggle('active', isEnabled);
+    toggleBtn.title = `Auto-format .xml links: ${isEnabled ? 'Enabled' : 'Disabled'} (Click to toggle)`;
+    toggleBtn.setAttribute('aria-label', toggleBtn.title);
+  }
+
+  async handleInitialRoute() {
+    const params = new URLSearchParams(window.location.search);
+    const targetUrl = params.get('url');
+    const autoFormat = params.get('autoformat') !== '0';
+    const fromSelection = params.get('from') === 'selection';
+    const rawXml = params.get('xml');
+
+    if (targetUrl) {
+      await this.loadAndFormatUrl(targetUrl, autoFormat);
+      return;
+    }
+
+    if (fromSelection) {
+      await this.loadFromSelection();
+      return;
+    }
+
+    if (rawXml) {
+      try {
+        const decoded = decodeURIComponent(rawXml);
+        const formatted = formatXml(decoded, { indent: '  ', preserveComments: true, entities: 'auto' });
+        this.editor.setValue(formatted, true);
+        showToast('Auto-formatted XML fields', 'success');
+        return;
+      } catch (_e) {}
+    }
+
+    // Default: load sample
     this.loadSample('ecommerce');
+  }
+
+  async loadAndFormatUrl(targetUrl, autoFormat = true) {
+    this.showSourceBanner(targetUrl);
+    showToast(`Loading XML from ${targetUrl}...`, 'info', 2500);
+
+    try {
+      const result = await fetchXmlFromUrl(targetUrl);
+      const rawText = result.text;
+
+      let contentToLoad = rawText;
+      if (autoFormat) {
+        try {
+          contentToLoad = formatXml(rawText, { indent: '  ', preserveComments: true, entities: 'auto' });
+        } catch (_fmtErr) {
+          contentToLoad = rawText;
+        }
+      }
+
+      if (this.editorFormat !== 'xml') {
+        this.switchEditorFormat('xml', false);
+      }
+
+      this.editor.setValue(contentToLoad, true);
+      this.handleContentChange(contentToLoad);
+
+      const valRes = validateXml(contentToLoad);
+      const elemInfo = valRes.valid ? ` (${valRes.elementCount} elements)` : '';
+      showToast(`Auto-formatted XML fields from URL${elemInfo}`, 'success', 4000);
+    } catch (err) {
+      showToast(`Failed to load XML from URL: ${err.message}`, 'error', 6000);
+      this.loadSample('ecommerce');
+    }
+  }
+
+  showSourceBanner(targetUrl) {
+    const banner = document.getElementById('xml-source-banner');
+    const urlText = document.getElementById('source-url-text');
+    const btnRaw = document.getElementById('btn-view-raw-source');
+    const btnReload = document.getElementById('btn-reload-source');
+    const btnClose = document.getElementById('btn-close-source-banner');
+
+    if (!banner || !urlText) return;
+
+    urlText.textContent = targetUrl;
+    urlText.title = targetUrl;
+
+    if (btnRaw) {
+      const sep = targetUrl.includes('?') ? '&' : '?';
+      btnRaw.href = `${targetUrl}${sep}raw=true`;
+    }
+
+    if (btnReload) {
+      btnReload.onclick = () => {
+        this.loadAndFormatUrl(targetUrl, true);
+      };
+    }
+
+    if (btnClose) {
+      btnClose.onclick = () => {
+        banner.classList.add('hidden');
+      };
+    }
+
+    banner.classList.remove('hidden');
+  }
+
+  async loadFromSelection() {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['pendingXml'], (res) => {
+        if (res.pendingXml) {
+          let content = res.pendingXml;
+          try {
+            content = formatXml(content, { indent: '  ', preserveComments: true, entities: 'auto' });
+          } catch (_e) {}
+
+          if (this.editorFormat !== 'xml') {
+            this.switchEditorFormat('xml', false);
+          }
+          this.editor.setValue(content, true);
+          this.handleContentChange(content);
+          chrome.storage.local.remove(['pendingXml']);
+          showToast('Loaded and auto-formatted selected XML fields', 'success');
+        } else {
+          this.loadSample('ecommerce');
+        }
+      });
+    } else {
+      this.loadSample('ecommerce');
+    }
   }
 
   initComponents() {
