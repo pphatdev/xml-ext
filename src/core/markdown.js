@@ -76,14 +76,16 @@ export function parseMarkdown(mdString) {
         output.push(`
           <div class="code-block-wrap">
             <div class="code-block-header">
-              <div class="code-window-controls" aria-hidden="true">
-                <span class="code-dot dot-red"></span>
-                <span class="code-dot dot-yellow"></span>
-                <span class="code-dot dot-green"></span>
-              </div>
-              <div class="code-header-badge">
-                <span class="code-lang">${escapeHtml(codeLang || 'text')}</span>
-                <span class="code-line-count">${linesCount} ${linesCount === 1 ? 'line' : 'lines'}</span>
+              <div class="code-header-left">
+                <div class="code-window-controls" aria-hidden="true">
+                  <span class="code-dot dot-red"></span>
+                  <span class="code-dot dot-yellow"></span>
+                  <span class="code-dot dot-green"></span>
+                </div>
+                <div class="code-header-badge">
+                  <span class="code-lang">${escapeHtml(codeLang || 'text')}</span>
+                  <span class="code-line-count">${linesCount} ${linesCount === 1 ? 'line' : 'lines'}</span>
+                </div>
               </div>
               <button type="button" class="btn-copy-code" title="Copy code" data-code="${escapeHtml(codeContent)}">
                 <svg class="icon-sm icon-copy" viewBox="0 0 20 20" fill="currentColor">
