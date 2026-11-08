@@ -34,41 +34,35 @@ export class XmlChartView {
       <div class="chart-wrapper">
         <div class="chart-toolbar">
           <div class="chart-type-tabs">
-            <button type="button" class="tab-btn active" data-chart="card-flow" title="Object Schema Card Flow format">
+            <button type="button" class="tab-btn active" data-chart="card-flow" title="Card Flow (Object Schema cards)" aria-label="Card Flow">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M4 3a2 2 0 00-2 2v2a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2H4zm8 0a2 2 0 00-2 2v2a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2h-4zm-8 8a2 2 0 00-2 2v2a2 2 0 002 2h4a2 2 0 002-2v-2a2 2 0 00-2-2H4zm8 0a2 2 0 00-2 2v2a2 2 0 002 2h4a2 2 0 002-2v-2a2 2 0 00-2-2h-4z"/>
               </svg>
-              Card Flow
             </button>
-            <button type="button" class="tab-btn" data-chart="hierarchy" title="Horizontal Node-Link Hierarchy Tree">
+            <button type="button" class="tab-btn" data-chart="hierarchy" title="Hierarchy (Horizontal node-link tree)" aria-label="Hierarchy">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"/>
               </svg>
-              Hierarchy
             </button>
-            <button type="button" class="tab-btn" data-chart="mermaid" title="Mermaid Flowchart Diagram & Code">
+            <button type="button" class="tab-btn" data-chart="mermaid" title="Mermaid Flowchart Diagram & Code" aria-label="Mermaid">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
               </svg>
-              Mermaid
             </button>
-            <button type="button" class="tab-btn" data-chart="graph" title="Interactive Relational Network Graph">
+            <button type="button" class="tab-btn" data-chart="graph" title="Relational Network Graph" aria-label="Graph">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10 2a3 3 0 100 6 3 3 0 000-6zM3 13a3 3 0 100 6 3 3 0 000-6zM17 13a3 3 0 100 6 3 3 0 000-6zM6.5 13.5l2.2-4.2m2.6 0l2.2 4.2"/>
               </svg>
-              Graph
             </button>
-            <button type="button" class="tab-btn" data-chart="frequency" title="Element Tag Frequency Distribution">
+            <button type="button" class="tab-btn" data-chart="frequency" title="Element Tag Frequency Distribution" aria-label="Tag Frequency">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
               </svg>
-              Tag Frequency
             </button>
-            <button type="button" class="tab-btn" data-chart="depth" title="Element Depth Distribution">
+            <button type="button" class="tab-btn" data-chart="depth" title="Element Depth Distribution" aria-label="Depth">
               <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L9.586 10l1.293 1.293a1 1 0 001.414 0l3-3z" clip-rule="evenodd"/>
               </svg>
-              Depth
             </button>
           </div>
           <div class="chart-actions">
