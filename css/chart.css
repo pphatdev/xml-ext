@@ -33,6 +33,179 @@
   display: flex;
 }
 
+/* Interactive Canvas for Horizontal Tree */
+.chart-canvas-wrap {
+  width: 100%;
+  height: 100%;
+  background-color: #0b0f19; /* Dark theme background matching example image */
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+}
+
+.chart-canvas-wrap.panning {
+  cursor: grabbing;
+}
+
+.tree-canvas-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Connecting cubic bezier curves */
+.tree-curve {
+  fill: none;
+  stroke: #14b8a6; /* Teal/emerald curve matching screenshot */
+  stroke-width: 1.75px;
+  opacity: 0.85;
+  transition: stroke 0.2s, stroke-width 0.2s, opacity 0.2s;
+}
+
+.tree-curve:hover {
+  stroke: #2dd4bf;
+  stroke-width: 2.5px;
+  opacity: 1;
+}
+
+/* Node dots and labels */
+.tree-node-interactive {
+  cursor: pointer;
+}
+
+.tree-node-dot {
+  transition: r 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s, filter 0.2s;
+  filter: drop-shadow(0 0 4px rgba(20, 184, 166, 0.4));
+}
+
+.tree-node-interactive:hover .tree-node-dot {
+  r: 8.5px;
+  filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.8));
+}
+
+.tree-node-tag-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: #93c5fd; /* Soft cyan/blue text matching screenshot */
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: fill 0.15s;
+}
+
+.tree-node-interactive:hover .tree-node-tag-text {
+  fill: #e0f2fe;
+}
+
+.tree-node-attr-text {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  fill: #f59e0b; /* Golden amber attribute text matching screenshot */
+  font-weight: 400;
+}
+
+/* Floating overlay controls (Zoom in, Zoom out, Fit) */
+.chart-overlay-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: rgba(30, 41, 59, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
+  gap: 0.2rem;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.chart-ctrl-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-normal);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.chart-ctrl-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--primary);
+}
+
+/* Rich hover tooltip */
+.chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background-color: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  color: var(--text-normal);
+  font-size: 11.5px;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  max-width: 300px;
+  line-height: 1.4;
+  animation: tooltip-fade 0.15s ease-out;
+}
+
+@keyframes tooltip-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tooltip-title {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 0.2rem;
+}
+
+.tooltip-meta {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+}
+
+.tooltip-section {
+  margin-top: 0.35rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.35rem;
+  font-size: 11px;
+}
+
+.tooltip-attr {
+  font-family: var(--font-mono);
+  color: #f59e0b;
+  font-size: 10.5px;
+}
+
+.chart-empty-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 2rem;
+}
+
 .chart-scroll-box {
   flex: 1;
   overflow: auto;

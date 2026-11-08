@@ -161,19 +161,15 @@ export const XML_SAMPLES = {
     name: 'SOAP Web Service Request',
     description: 'SOAP 1.2 Envelope with header and body payload',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
-               xmlns:m="http://example.com/weather">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Header>
-    <m:AuthHeader>
-      <m:ApiKey>sec_key_9482938472938</m:ApiKey>
-    </m:AuthHeader>
+    <auth:Token xmlns:auth="http://example.com/auth">token_xyz987654</auth:Token>
   </soap:Header>
-  <soap:Body>
-    <m:GetForecastRequest>
-      <m:CityName>Tokyo</m:CityName>
-      <m:Units>metric</m:Units>
-      <m:Days>7</m:Days>
-    </m:GetForecastRequest>
+  <soap:Body xmlns:ns="http://example.com/orders">
+    <ns:GetOrderRequest id="ord-84920">
+      <orderId>84920</orderId>
+      <includeDetails>true</includeDetails>
+    </ns:GetOrderRequest>
   </soap:Body>
 </soap:Envelope>`
   }

@@ -28,3 +28,4 @@ Deno.test('XPath evaluate text() selector', () => {
   assertEquals(res.count, 1);
   assertEquals(res.results[0].value, 'XML Pro');
 });
+

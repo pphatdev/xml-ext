@@ -79,3 +79,4 @@ export function validateXmlSchema(xmlString, schemaRules = {}) {
   checkNode(parsed.root);
   return result;
 }
+

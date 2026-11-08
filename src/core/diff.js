@@ -108,3 +108,4 @@ export function diffXml(xmlA, xmlB) {
     totalDiffs: diffs.length
   };
 }
+

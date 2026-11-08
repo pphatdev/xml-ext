@@ -348,10 +348,15 @@ export function xmlToChartData(xmlString) {
       .map(c => buildHierarchy(c, depth + 1))
       .filter(Boolean);
 
+    const textChildren = (node.children || []).filter(c => c.type === 'text');
+    const textVal = textChildren.map(t => t.text.trim()).filter(Boolean).join(' ');
+
     return {
       name: node.name,
       depth,
+      attributes: node.attributes || {},
       attrsCount: Object.keys(node.attributes || {}).length,
+      text: textVal,
       children: children.length > 0 ? children : undefined,
       value: children.length === 0 ? 1 : children.length
     };

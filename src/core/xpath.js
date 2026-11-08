@@ -193,3 +193,4 @@ function fallbackEvaluateXPath(xmlString, xpathExpr) {
 
   return { results, count: results.length, type: 'nodes' };
 }
+
