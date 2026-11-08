@@ -783,7 +783,7 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  overflow: auto;
+  overflow: hidden;
   background-color: var(--code-bg, #0b0f19);
   display: flex;
   flex-direction: column;
@@ -798,11 +798,31 @@
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.converter-preview-box .code-block-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-shrink: 0;
 }
 
 .converter-preview-box .code-body-wrapper {
   flex: 1;
   min-height: 0;
+  overflow: auto;
+}
+
+.converter-preview-box .code-line-numbers {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.converter-preview-box.wrap-text .code-line-numbers {
+  display: none;
 }
 
 .converter-preview-box.wrap-text .code-body-wrapper code {

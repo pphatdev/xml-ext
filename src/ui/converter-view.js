@@ -292,6 +292,19 @@ export class XmlConverterView {
       copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(this.convertedOutput);
         showToast('Converted code copied to clipboard', 'success');
+        const copyIcon = copyBtn.querySelector('.icon-copy');
+        const checkIcon = copyBtn.querySelector('.icon-check');
+        const label = copyBtn.querySelector('.copy-label');
+        copyBtn.classList.add('copied');
+        if (copyIcon) copyIcon.classList.add('hidden');
+        if (checkIcon) checkIcon.classList.remove('hidden');
+        if (label) label.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          if (copyIcon) copyIcon.classList.remove('hidden');
+          if (checkIcon) checkIcon.classList.add('hidden');
+          if (label) label.textContent = 'Copy';
+        }, 1500);
       });
     }
   }
