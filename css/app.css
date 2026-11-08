@@ -478,6 +478,26 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Workbench View Panels */
+.view-panel {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.view-panel.hidden {
+  display: none !important;
 }
 
 /* Modals */
