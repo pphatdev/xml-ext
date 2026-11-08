@@ -4,7 +4,9 @@
 
 body.popup-body {
   width: 440px;
+  max-width: 100vw;
   height: 560px;
+  max-height: 100vh;
   margin: 0;
   padding: 0;
   background-color: var(--bg-primary);
@@ -119,5 +121,23 @@ body.popup-body {
   justify-content: space-between;
   font-size: 0.7rem;
   color: var(--text-muted);
+}
+
+@media (max-width: 440px) {
+  body.popup-body {
+    width: 100vw;
+    height: 100vh;
+  }
+  .popup-header {
+    padding: 0.4rem 0.6rem;
+  }
+  .popup-toolbar {
+    padding: 0.3rem 0.5rem;
+    flex-wrap: wrap;
+  }
+  .popup-tabs .tab-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.72rem;
+  }
 }
 

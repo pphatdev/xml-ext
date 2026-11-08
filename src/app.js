@@ -92,6 +92,20 @@ export class App {
       toggleTheme();
     });
 
+    // Mobile pane switcher (Small Screens)
+    const mobileSwitchBtns = document.querySelectorAll('#mobile-pane-switcher .mobile-switch-btn');
+    const workbenchLayout = document.querySelector('.workbench-layout');
+    mobileSwitchBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        mobileSwitchBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const pane = btn.dataset.pane;
+        if (workbenchLayout) {
+          workbenchLayout.setAttribute('data-mobile-pane', pane);
+        }
+      });
+    });
+
     // View format switchers (XML / Tree / JSON / Chart / TXT / Linter / Analyzer / Convert)
     const viewTabs = document.querySelectorAll('.workbench-tabs .workbench-tab');
     for (const tab of viewTabs) {
@@ -99,6 +113,12 @@ export class App {
         viewTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         this.switchView(tab.dataset.view);
+
+        // Auto-switch mobile view to visualizer on small screens
+        if (window.innerWidth <= 900 && workbenchLayout && workbenchLayout.getAttribute('data-mobile-pane') === 'editor') {
+          workbenchLayout.setAttribute('data-mobile-pane', 'visualizer');
+          mobileSwitchBtns.forEach(b => b.classList.toggle('active', b.dataset.pane === 'visualizer'));
+        }
       });
     }
 

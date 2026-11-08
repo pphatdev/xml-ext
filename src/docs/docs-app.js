@@ -44,6 +44,35 @@ export class DocsApp {
   }
 
   initEvents() {
+    // Mobile docs menu toggle
+    const menuBtn = document.getElementById('btn-toggle-docs-menu');
+    const navSidebar = document.querySelector('.docs-nav-sidebar');
+    let backdrop = null;
+
+    const closeMobileNav = () => {
+      if (navSidebar) navSidebar.classList.remove('mobile-open');
+      if (backdrop) {
+        backdrop.remove();
+        backdrop = null;
+      }
+    };
+
+    if (menuBtn && navSidebar) {
+      menuBtn.addEventListener('click', () => {
+        const isOpen = navSidebar.classList.toggle('mobile-open');
+        if (isOpen) {
+          backdrop = document.createElement('div');
+          backdrop.className = 'docs-mobile-backdrop';
+          document.body.appendChild(backdrop);
+          backdrop.addEventListener('click', closeMobileNav);
+        } else {
+          closeMobileNav();
+        }
+      });
+    }
+
+    this.closeMobileNav = closeMobileNav;
+
     // Theme toggle
     document.getElementById('btn-theme-toggle').addEventListener('click', () => {
       toggleTheme();
@@ -206,6 +235,7 @@ export class DocsApp {
         const id = item.dataset.id;
         this.activeDocId = id;
         window.location.hash = id;
+        if (this.closeMobileNav) this.closeMobileNav();
         this.renderNav();
         this.renderActiveDoc();
       });

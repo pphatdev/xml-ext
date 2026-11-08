@@ -12,11 +12,17 @@
   <!-- Header -->
   <header class="docs-header">
     <div class="docs-header-left">
+      <button type="button" id="btn-toggle-docs-menu" class="btn-icon mobile-docs-menu-btn" title="Toggle Documents List" aria-label="Toggle Documents Navigation">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
       <a href="index.html" class="btn-back-studio" title="Return to XML Studio Workbench">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
         </svg>
-        Back to Studio
+        <span class="btn-back-text">Back to Studio</span>
       </a>
       <div class="toolbar-divider" style="height: 18px;"></div>
       <div class="brand-group">
@@ -47,14 +53,14 @@
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
         </svg>
-        Upload .md
+        <span class="btn-upload-md-text">Upload .md</span>
       </button>
 
       <button type="button" id="btn-open-post-modal" class="btn-primary btn-sm" title="Write or post a Markdown document">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
         </svg>
-        Post Doc
+        <span class="btn-post-doc-text">Post Doc</span>
       </button>
 
       <input type="file" id="md-file-input" class="hidden" accept=".md,.markdown,.txt" />

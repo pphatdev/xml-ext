@@ -130,8 +130,30 @@
     </div>
   </nav>
 
+  <!-- Mobile Pane Switcher (Small Screens Only) -->
+  <div class="mobile-pane-switcher" id="mobile-pane-switcher">
+    <button type="button" class="mobile-switch-btn active" data-pane="editor">
+      <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+      </svg>
+      XML Editor
+    </button>
+    <button type="button" class="mobile-switch-btn" data-pane="visualizer">
+      <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+      </svg>
+      Visualizer & Tools
+    </button>
+    <button type="button" class="mobile-switch-btn" data-pane="both">
+      <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h10a2 2 0 002-2v-2a2 2 0 00-2-2H5z"/>
+      </svg>
+      Split
+    </button>
+  </div>
+
   <!-- Workbench Split Layout -->
-  <main class="workbench-layout">
+  <main class="workbench-layout" data-mobile-pane="editor">
     <!-- Left Pane: Editor -->
     <section class="workbench-pane left-pane">
       <div class="pane-header">
