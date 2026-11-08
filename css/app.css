@@ -325,7 +325,7 @@ body {
   background-color: var(--bg-hover);
   color: var(--text-normal);
   border-color: var(--border-color);
-  padding: 0.45rem 0.75rem;
+  padding: 0.45rem 0.65rem;
 }
 
 .btn-secondary:hover {
@@ -947,7 +947,7 @@ body {
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-muted);
-  padding: 0.45rem 0.75rem;
+  padding: 0.45rem 0.65rem;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s;
