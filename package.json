@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "deno test",
-    "dev": "python3 -m http.server 3000"
+    "dev": "deno run --allow-net --allow-read dev-server.js"
   },
   "keywords": [
     "xml",

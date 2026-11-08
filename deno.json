@@ -4,7 +4,7 @@
   "exports": "./src/app.js",
   "tasks": {
     "test": "deno test",
-    "dev": "python3 -m http.server 3000",
+    "dev": "deno run --allow-net --allow-read dev-server.js",
     "fmt": "deno fmt src/ tests/",
     "lint": "deno lint src/ tests/"
   },

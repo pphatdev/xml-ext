@@ -11,6 +11,7 @@ import { XmlLinterView } from './ui/linter-view.js';
 import { XmlAnalyzerView } from './ui/analyzer-view.js';
 import { XmlConverterView } from './ui/converter-view.js';
 import { SitemapModal } from './ui/sitemap-modal.js';
+import { UrlModal } from './ui/url-modal.js';
 import { XML_SAMPLES } from './samples/samples.js';
 
 import { formatXml } from './core/formatter.js';
@@ -74,6 +75,13 @@ export class App {
       onLoadIntoEditor: (xml) => {
         this.editor.setValue(xml, true);
         this.switchView('tree');
+      }
+    });
+
+    // 8. Load from URL Modal
+    this.urlModal = new UrlModal({
+      onLoadXml: (xml) => {
+        this.editor.setValue(xml, true);
       }
     });
   }
@@ -309,32 +317,8 @@ export class App {
     }
   }
 
-  async promptLoadFromUrl() {
-    const url = prompt('Enter XML URL to load (e.g. sitemap.xml, RSS feed):', 'https://www.w3schools.com/xml/cd_catalog.xml');
-    if (!url || !url.trim()) return;
-
-    showToast('Fetching XML from URL...', 'info');
-
-    try {
-      let response;
-      try {
-        response = await fetch(url.trim());
-      } catch (corsErr) {
-        // Fallback to CORS proxy if browser blocks direct fetch
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url.trim())}`;
-        response = await fetch(proxyUrl);
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
-      }
-
-      const text = await response.text();
-      this.editor.setValue(text, true);
-      showToast(`Successfully loaded XML from URL (${Math.round(text.length / 1024)} KB)`, 'success');
-    } catch (err) {
-      showToast(`Failed to load from URL: ${err.message}`, 'error', 5000);
-    }
+  promptLoadFromUrl() {
+    this.urlModal.show();
   }
 
   loadFile(file) {

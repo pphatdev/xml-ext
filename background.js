@@ -38,3 +38,21 @@ chrome.contextMenus?.onClicked.addListener((info, tab) => {
   }
 });
 
+// Extension background fetch proxy to bypass CORS
+chrome.runtime?.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === 'FETCH_XML_URL') {
+    fetch(request.url)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP Error ${res.status}: ${res.statusText}`);
+        }
+        const text = await res.text();
+        sendResponse({ success: true, text });
+      })
+      .catch((err) => {
+        sendResponse({ success: false, error: err.message });
+      });
+    return true; // Keep message channel open for async response
+  }
+});
+
