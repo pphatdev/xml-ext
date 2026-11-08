@@ -31,7 +31,7 @@ export class App {
     this.initDragAndDrop();
 
     // Load initial sample
-    this.loadSample('catalog');
+    this.loadSample('ecommerce');
   }
 
   initComponents() {

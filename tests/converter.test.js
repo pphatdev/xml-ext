@@ -4,6 +4,7 @@ import {
   jsonToXml,
   xmlToTree,
   xmlToChartData,
+  xmlToCardFlowData,
   xmlToTxt,
   xmlToCsv,
   xmlToYaml
@@ -67,6 +68,47 @@ Deno.test('XML to Chart Data', () => {
   assert(chartData.hierarchy !== null);
   assertEquals(chartData.hierarchy.name, 'company');
   assertEquals(chartData.maxDepth, 3);
+});
+
+Deno.test('XML to Card Flow Data schema extraction', () => {
+  const xml = `<categories>
+  <category id="1">
+    <name>Electronics</name>
+    <products>
+      <product id="101"><name>Laptop</name><price>999.99</price></product>
+      <product id="102"><name>Smartphone</name><price>599.99</price></product>
+    </products>
+  </category>
+</categories>`;
+
+  const flow = xmlToCardFlowData(xml);
+  assert(flow !== null);
+  assertEquals(flow.name, 'categories');
+  assertEquals(flow.isPill, true);
+  assertEquals(flow.lines[0].key, 'categories');
+  assertEquals(flow.lines[0].value, '[1]');
+  assertEquals(flow.children.length, 1);
+
+  const cat = flow.children[0];
+  assertEquals(cat.name, 'category');
+  assertEquals(cat.lines.length, 3);
+  assertEquals(cat.lines[0].key, 'id');
+  assertEquals(cat.lines[0].value, '1');
+  assertEquals(cat.lines[1].key, 'name');
+  assertEquals(cat.lines[1].value, 'Electronics');
+  assertEquals(cat.lines[2].key, 'products');
+  assertEquals(cat.lines[2].value, '[2]');
+  assertEquals(cat.children.length, 2);
+
+  const prod1 = cat.children[0];
+  assertEquals(prod1.name, 'product');
+  assertEquals(prod1.lines[0].key, 'id');
+  assertEquals(prod1.lines[0].value, '101');
+  assertEquals(prod1.lines[1].key, 'name');
+  assertEquals(prod1.lines[1].value, 'Laptop');
+  assertEquals(prod1.lines[2].key, 'price');
+  assertEquals(prod1.lines[2].value, '999.99');
+  assertEquals(prod1.children.length, 0);
 });
 
 Deno.test('XML to Plain Text outline', () => {

@@ -3,6 +3,48 @@
  */
 
 export const XML_SAMPLES = {
+  ecommerce: {
+    name: 'E-Commerce Schema (Card Flow)',
+    description: 'Categories and products schema matching Card Flow diagram',
+    xml: `<?xml version="1.0" encoding="UTF-8"?>
+<categories>
+  <category id="1">
+    <name>Electronics</name>
+    <products>
+      <product id="101">
+        <name>Laptop</name>
+        <price>999.99</price>
+      </product>
+      <product id="102">
+        <name>Smartphone</name>
+        <price>599.99</price>
+      </product>
+      <product id="103">
+        <name>Headphones</name>
+        <price>99.99</price>
+      </product>
+    </products>
+  </category>
+  <category id="2">
+    <name>Clothing</name>
+    <products>
+      <product id="201">
+        <name>T-shirt</name>
+        <price>19.99</price>
+      </product>
+      <product id="202">
+        <name>Jeans</name>
+        <price>49.99</price>
+      </product>
+      <product id="203">
+        <name>Sneakers</name>
+        <price>79.99</price>
+      </product>
+    </products>
+  </category>
+</categories>`
+  },
+
   catalog: {
     name: 'Book Catalog',
     description: 'Hierarchical catalog with attributes, prices, and dates',

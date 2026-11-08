@@ -33,7 +33,7 @@
   display: flex;
 }
 
-/* Interactive Canvas for Horizontal Tree */
+/* Interactive Canvas for Horizontal Tree and Schema Card Flow */
 .chart-canvas-wrap {
   width: 100%;
   height: 100%;
@@ -42,10 +42,105 @@
   overflow: hidden;
   cursor: grab;
   user-select: none;
+  transition: background-color 0.25s ease;
 }
 
-.chart-canvas-wrap.panning {
-  cursor: grabbing;
+.chart-canvas-wrap.theme-card-flow {
+  background-color: #000000; /* Deep pitch black matching user reference image */
+}
+
+/* Schema Card Flow Diagram Elements */
+.card-flow-card {
+  fill: #0c1938; /* Deep midnight navy */
+  stroke: #3f619e; /* Refined slate-blue border */
+  stroke-width: 1.5px;
+  cursor: pointer;
+  transition: stroke 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-flow-node {
+  cursor: pointer;
+}
+
+.card-flow-node:hover .card-flow-card {
+  stroke: #60a5fa;
+  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.55));
+}
+
+.card-flow-pill-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  fill: #ffffff;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.card-flow-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12.5px;
+  fill: #ffffff;
+  pointer-events: none;
+  letter-spacing: -0.01em;
+}
+
+.card-flow-key {
+  fill: #ffffff;
+  font-weight: 500;
+}
+
+.card-flow-colon {
+  fill: #94a3b8;
+  font-weight: 400;
+}
+
+.card-flow-val {
+  fill: #ffffff;
+  font-weight: 500;
+}
+
+.card-flow-port {
+  fill: #ffffff;
+  cursor: pointer;
+  transition: fill 0.15s, transform 0.15s;
+}
+
+.card-flow-port:hover {
+  fill: #93c5fd;
+  transform: scale(1.35);
+}
+
+.card-flow-port-collapsed {
+  fill: #f59e0b;
+}
+
+.card-flow-stub {
+  stroke: #ffffff;
+  stroke-width: 1.5px;
+  stroke-dasharray: 3 3;
+}
+
+.card-flow-fork {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.card-flow-curve {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.5px;
+  stroke-dasharray: 4 4;
+  opacity: 0.9;
+  transition: stroke 0.2s, stroke-width 0.2s, opacity 0.2s;
+}
+
+.card-flow-curve:hover,
+.card-flow-curve.highlighted {
+  stroke: #93c5fd;
+  stroke-width: 2.2px;
+  opacity: 1;
 }
 
 .tree-canvas-svg {

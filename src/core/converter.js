@@ -372,6 +372,164 @@ export function xmlToChartData(xmlString) {
 }
 
 /**
+ * Converts XML to Object Schema / Card Flow structure
+ * Extracts attributes and scalar child tags as key-value lines,
+ * groups complex children and array collections, and generates
+ * hierarchy suitable for Card Flow diagram rendering.
+ *
+ * @param {string} xmlString
+ * @returns {object|null} Card node hierarchy
+ */
+export function xmlToCardFlowData(xmlString) {
+  const parsed = parseXml(xmlString, { tolerant: true });
+  if (!parsed.root) return null;
+
+  let idCounter = 0;
+
+  function buildCard(node, path = '') {
+    if (!node || node.type !== 'element') return null;
+    const curPath = path ? `${path}/${node.name}` : `/${node.name}`;
+    const id = `card_${++idCounter}`;
+
+    const lines = [];
+    const childCards = [];
+
+    // 1. Attributes
+    if (node.attributes) {
+      for (const [k, v] of Object.entries(node.attributes)) {
+        lines.push({ key: k, value: String(v) });
+      }
+    }
+
+    // 2. Element children
+    const elementChildren = (node.children || []).filter(c => c.type === 'element');
+    const scalarLeafChildren = [];
+    const complexChildren = [];
+
+    for (const child of elementChildren) {
+      const subElements = (child.children || []).filter(c => c.type === 'element');
+      const hasAttrs = child.attributes && Object.keys(child.attributes).length > 0;
+      if (subElements.length === 0 && !hasAttrs) {
+        // Scalar leaf child
+        const textVal = (child.children || [])
+          .filter(c => c.type === 'text')
+          .map(c => c.text.trim())
+          .filter(Boolean)
+          .join(' ');
+        scalarLeafChildren.push({ name: child.name, text: textVal });
+      } else {
+        complexChildren.push(child);
+      }
+    }
+
+    // If node has no attributes and no scalar leaves, and has multiple children:
+    // It's a top-level container node (like <categories> holding categories)
+    if (lines.length === 0 && scalarLeafChildren.length === 0 && complexChildren.length > 0) {
+      lines.push({
+        key: node.name,
+        value: `[${complexChildren.length}]`,
+        isCollection: true
+      });
+      complexChildren.forEach((child, idx) => {
+        const card = buildCard(child, `${curPath}[${idx}]`);
+        if (card) childCards.push(card);
+      });
+      return {
+        id,
+        path: curPath,
+        name: node.name,
+        isPill: true,
+        lines,
+        children: childCards
+      };
+    }
+
+    // Add scalar leaves to lines
+    for (const leaf of scalarLeafChildren) {
+      lines.push({ key: leaf.name, value: leaf.text || '""' });
+    }
+
+    // Group complex children by tag name
+    const groupedComplex = new Map();
+    for (const complex of complexChildren) {
+      if (!groupedComplex.has(complex.name)) {
+        groupedComplex.set(complex.name, []);
+      }
+      groupedComplex.get(complex.name).push(complex);
+    }
+
+    for (const [tagName, items] of groupedComplex.entries()) {
+      // Check if this single item is a container wrapper (e.g. <products> holding <product> list)
+      if (items.length === 1) {
+        const item = items[0];
+        const grandSubElements = (item.children || []).filter(c => c.type === 'element');
+        const grandAttrs = item.attributes && Object.keys(item.attributes).length > 0;
+        const isContainerWrapper = grandSubElements.length > 0 && !grandAttrs;
+
+        if (isContainerWrapper) {
+          lines.push({
+            key: tagName,
+            value: `[${grandSubElements.length}]`,
+            isCollection: true
+          });
+          grandSubElements.forEach((grandChild, idx) => {
+            const card = buildCard(grandChild, `${curPath}/${tagName}[${idx}]`);
+            if (card) childCards.push(card);
+          });
+          continue;
+        }
+      }
+
+      // If items have multiple elements or a single complex element
+      if (items.length > 1) {
+        lines.push({
+          key: tagName,
+          value: `[${items.length}]`,
+          isCollection: true
+        });
+        items.forEach((item, idx) => {
+          const card = buildCard(item, `${curPath}/${tagName}[${idx}]`);
+          if (card) childCards.push(card);
+        });
+      } else {
+        const item = items[0];
+        const subCount = (item.children || []).filter(c => c.type === 'element').length;
+        lines.push({
+          key: tagName,
+          value: subCount > 0 ? `[${subCount}]` : `{...}`,
+          isCollection: true
+        });
+        const card = buildCard(item, `${curPath}/${tagName}`);
+        if (card) childCards.push(card);
+      }
+    }
+
+    // If still empty (e.g. leaf node with only text)
+    if (lines.length === 0) {
+      const textVal = (node.children || [])
+        .filter(c => c.type === 'text')
+        .map(c => c.text.trim())
+        .filter(Boolean)
+        .join(' ');
+      lines.push({ key: node.name, value: textVal || '(empty)' });
+    }
+
+    const isPill = lines.length === 1 && lines[0].isCollection;
+
+    return {
+      id,
+      path: curPath,
+      name: node.name,
+      isPill,
+      lines,
+      children: childCards
+    };
+  }
+
+  return buildCard(parsed.root);
+}
+
+/**
  * Converts XML to structured plain text (TXT)
  * @param {string} xmlString
  * @param {object} [options]
