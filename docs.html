@@ -6,6 +6,8 @@
   <title>Documentation — XML Pro Toolkit</title>
   <link rel="stylesheet" href="css/app.css" />
   <link rel="stylesheet" href="css/docs.css" />
+  <link rel="icon" type="image/x-icon" href="fav.ico" />
+  <link rel="shortcut icon" href="fav.ico" />
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
 </head>
 <body class="docs-body">
@@ -27,9 +29,7 @@
       <div class="toolbar-divider" style="height: 18px;"></div>
       <div class="brand-group">
         <div class="brand-icon" style="width: 26px; height: 26px;">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
+          <img src="fav.ico" class="brand-logo-img" alt="XML Pro Logo" width="18" height="18" />
         </div>
         <span class="brand-name" style="font-size: 1rem;">XML Pro Docs</span>
       </div>
@@ -50,8 +50,11 @@
       </div>
 
       <button type="button" id="btn-upload-md" class="btn-secondary btn-sm" title="Upload a Markdown file from docs folder or disk">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm icon icon-tabler icons-tabler-outline icon-tabler-markdown">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" />
+          <path d="M7 15v-6l2 2l2 -2v6" />
+          <path d="M14 13l2 2l2 -2m-2 2v-6" />
         </svg>
         <span class="btn-upload-md-text">Upload .md</span>
       </button>
@@ -120,8 +123,11 @@
       <div class="modal-body">
         <!-- Drag & Drop Zone -->
         <div class="drop-zone" id="post-drop-zone">
-          <svg class="drop-zone-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-zone-icon icon icon-tabler icons-tabler-outline icon-tabler-markdown">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" />
+            <path d="M7 15v-6l2 2l2 -2v6" />
+            <path d="M14 13l2 2l2 -2m-2 2v-6" />
           </svg>
           <div class="drop-zone-text">
             <strong>Click to select</strong> or drag and drop a <code>.md</code> file from the <code>docs/</code> folder

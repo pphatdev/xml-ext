@@ -1,310 +1,413 @@
 /**
- * Extension Popup Logic (Modern Studio Coordinator)
+ * XML Pro Toolkit - Popup Control Hub Logic
+ * Lightweight, instant-loading hub for extension settings,
+ * active tab inspection, and multi-format clipboard export grid.
  */
 
 import { initTheme, toggleTheme } from './src/ui/theme.js';
 import { formatXml } from './src/core/formatter.js';
-import { minifyXml, getMinifyStats } from './src/core/minifier.js';
-import { validateXml } from './src/core/validator.js';
-import { xmlToJson } from './src/core/converter.js';
-import { XmlEditor } from './src/ui/editor.js';
-import { XmlTreeView } from './src/ui/tree-view.js';
-import { XmlChartView } from './src/ui/chart-view.js';
-import { XML_SAMPLES } from './src/samples/samples.js';
-import { fetchXmlFromUrl } from './src/core/fetcher.js';
-import { showToast } from './src/ui/toast.js';
+import {
+  detectFormat,
+  xmlToTxt,
+  xmlToMarkdown,
+  xmlToJson,
+  xmlToCsv,
+  xmlToYaml,
+  jsonToXml,
+  yamlToXml,
+  csvToXml,
+  markdownToXml,
+  txtToXml
+} from './src/core/converter.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. Initialize Theme
   initTheme();
 
-  const editorMount = document.getElementById('popup-editor-mount');
-  const treeContainer = document.getElementById('popup-tree-container');
-  const chartContainer = document.getElementById('popup-chart-container');
-  const jsonOutput = document.getElementById('popup-json-output');
-
-  const statusBadge = document.getElementById('popup-status-badge');
-  const sizeInfo = document.getElementById('popup-size-info');
-  const linesInfo = document.getElementById('popup-lines-info');
-  const elemCount = document.getElementById('popup-elem-count');
-
-  // Initialize Editor
-  const editor = new XmlEditor(editorMount, {
-    onChange: () => updateStatus()
-  });
-
-  // Initialize Visualizers
-  const treeView = new XmlTreeView(treeContainer);
-  const chartView = new XmlChartView(chartContainer);
-
-  let activeTab = 'editor';
-
-  function formatBytes(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  const themeBtn = document.getElementById('btn-popup-theme');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      toggleTheme();
+    });
   }
 
-  function updateStatus() {
-    const val = editor.getValue();
-    const bytes = new TextEncoder().encode(val).length;
-    const lines = val ? val.split('\n').length : 0;
+  // Toast Helper
+  const toastEl = document.getElementById('popup-toast');
+  function showToast(msg, type = 'info') {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.className = `popup-toast visible ${type}`;
+    setTimeout(() => {
+      toastEl.classList.remove('visible');
+    }, 2200);
+  }
 
-    sizeInfo.textContent = formatBytes(bytes);
-    linesInfo.textContent = `${lines} line${lines === 1 ? '' : 's'}`;
+  // 2. Extension Enable/Disable Power Switch
+  const powerCheckbox = document.getElementById('popup-power-checkbox');
+  const powerDot = document.getElementById('popup-power-dot');
+  const powerTitle = document.getElementById('popup-power-title');
+  const powerSubtitle = document.getElementById('popup-power-subtitle');
 
-    if (!val.trim()) {
-      statusBadge.className = 'val-badge val-badge-empty';
-      statusBadge.innerHTML = '<span>Empty</span>';
-      statusBadge.title = 'No XML content loaded';
-      elemCount.textContent = '0 elem';
-      return;
+  function updatePowerUI(enabled) {
+    if (!powerCheckbox) return;
+    powerCheckbox.checked = enabled;
+    if (powerDot) {
+      powerDot.classList.toggle('active', enabled);
+      powerDot.classList.toggle('disabled', !enabled);
     }
-
-    const res = validateXml(val);
-    if (res.valid) {
-      statusBadge.className = 'val-badge val-badge-valid';
-      statusBadge.innerHTML = `
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-        </svg>
-        <span>Valid</span>
-      `;
-      statusBadge.title = `Valid XML: <${res.rootTag}> (${res.elementCount} elements)`;
-      elemCount.textContent = `${res.elementCount} elem`;
-    } else {
-      statusBadge.className = 'val-badge val-badge-invalid';
-      statusBadge.innerHTML = `
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-        </svg>
-        <span>${res.errors.length} Err</span>
-      `;
-      const firstErr = res.errors[0];
-      statusBadge.title = `Invalid XML: ${firstErr ? `Ln ${firstErr.line}:${firstErr.column} ${firstErr.message}` : 'Syntax error'}`;
-      elemCount.textContent = firstErr ? `Ln ${firstErr.line}` : 'Syntax Error';
+    if (powerTitle) {
+      powerTitle.textContent = enabled ? 'Extension Enabled' : 'Extension Disabled';
+    }
+    if (powerSubtitle) {
+      powerSubtitle.textContent = enabled
+        ? 'Auto-formats XML, JSON & data responses in browser'
+        : 'Default browser raw data viewer active';
     }
   }
 
-  // Load sample on start
-  const initialXml = XML_SAMPLES.ecommerce ? XML_SAMPLES.ecommerce.xml : `<?xml version="1.0" encoding="UTF-8"?>
-<note to="User" from="XML Pro">
-  <heading>Welcome</heading>
-  <body>Try quick format, minify, tree, or chart view!</body>
-</note>`;
+  // Load current extension state
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['autoFormatXml'], (res) => {
+      const isEnabled = res.autoFormatXml !== false;
+      updatePowerUI(isEnabled);
+    });
+  }
 
-  editor.setValue(initialXml, true);
-  updateStatus();
+  // Handle Switch Change
+  if (powerCheckbox) {
+    powerCheckbox.addEventListener('change', () => {
+      const isEnabled = powerCheckbox.checked;
+      updatePowerUI(isEnabled);
 
-  // If active tab is viewing an XML link, auto-format fields from active tab
+      if (typeof chrome !== 'undefined') {
+        if (chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ autoFormatXml: isEnabled }, () => {
+            showToast(isEnabled ? 'Extension Enabled' : 'Extension Disabled', isEnabled ? 'success' : 'info');
+          });
+        }
+        if (chrome.runtime && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage({ type: 'SET_AUTOFORMAT_STATUS', enabled: isEnabled });
+        }
+      }
+    });
+  }
+
+  // 3. Detect Active Tab Content & URL
+  const tabBadge = document.getElementById('tab-card-badge');
+  const tabUrlEl = document.getElementById('tab-card-url');
+  const btnTabStudio = document.getElementById('btn-tab-open-studio');
+  const btnTabStudioText = document.getElementById('btn-tab-open-studio-text');
+  const btnTabSidepanel = document.getElementById('btn-tab-open-sidepanel');
+
+  let activeTabUrl = '';
+  let activeTabId = null;
+  let activeTabFormat = null;
+
+  function detectUrlFormat(url) {
+    if (!url || typeof url !== 'string') return null;
+    if (/\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(url) || /\/(sitemap|feed|rss)($|\?|#)/i.test(url)) return 'xml';
+    if (/\.(json|geojson|jsonld)($|\?|#)/i.test(url)) return 'json';
+    if (/\.(yaml|yml)($|\?|#)/i.test(url)) return 'yaml';
+    if (/\.(csv|tsv)($|\?|#)/i.test(url)) return 'csv';
+    if (/\.(md|markdown)($|\?|#)/i.test(url)) return 'markdown';
+    if (/\.(txt|log)($|\?|#)/i.test(url)) return 'txt';
+    if (/\/api\/.+/i.test(url)) return 'json';
+    return null;
+  }
+
   if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-      const currentTab = tabs[0];
-      if (currentTab && currentTab.url && /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(currentTab.url)) {
-        try {
-          const res = await fetchXmlFromUrl(currentTab.url);
-          if (res && res.text) {
-            const formatted = formatXml(res.text, { indent: '  ', preserveComments: true, entities: 'auto' });
-            editor.setValue(formatted, true);
-            updateStatus();
-            showToast('Auto-formatted active tab XML', 'success');
-          }
-        } catch (_e) {}
-      }
-    });
-  }
-
-  // Header Actions
-  document.getElementById('btn-popup-open-full').addEventListener('click', () => {
-    if (typeof chrome !== 'undefined' && chrome.tabs) {
-      chrome.tabs.create({ url: 'index.html' });
-    } else {
-      window.open('index.html', '_blank');
-    }
-  });
-
-  document.getElementById('btn-popup-theme').addEventListener('click', () => {
-    toggleTheme();
-  });
-
-  // Format Helper
-  function executeFormat(entityMode = 'auto') {
-    const xml = editor.getValue();
-    if (!xml.trim()) return;
-
-    try {
-      const formatted = formatXml(xml, { indent: '  ', preserveComments: true, entities: entityMode });
-      editor.setValue(formatted, true);
-      updateStatus();
-      const labels = {
-        auto: 'Formatted cleanly',
-        named: 'Formatted with named entities',
-        numeric: 'Formatted with numeric entities',
-        hex: 'Formatted with hex entities',
-        decode: 'Decoded entities to text'
-      };
-      showToast(labels[entityMode] || 'Formatted XML', 'success');
-    } catch (e) {
-      showToast(`Format error: ${e.message}`, 'error');
-    }
-  }
-
-  // Format Main Button
-  document.getElementById('btn-popup-format').addEventListener('click', () => {
-    executeFormat('auto');
-  });
-
-  // Format Dropdown
-  const btnFormatDropdown = document.getElementById('btn-popup-format-dropdown');
-  const formatDropdownMenu = document.getElementById('popup-format-dropdown-menu');
-
-  if (btnFormatDropdown && formatDropdownMenu) {
-    btnFormatDropdown.addEventListener('click', (e) => {
-      e.stopPropagation();
-      formatDropdownMenu.classList.toggle('hidden');
-    });
-
-    formatDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const mode = item.dataset.entityMode || 'auto';
-        formatDropdownMenu.classList.add('hidden');
-        executeFormat(mode);
-      });
-    });
-
-    window.addEventListener('click', () => {
-      formatDropdownMenu.classList.add('hidden');
-    });
-  }
-
-  // Minify
-  document.getElementById('btn-popup-minify').addEventListener('click', () => {
-    const original = editor.getValue();
-    if (!original.trim()) return;
-
-    try {
-      const minified = minifyXml(original, { removeComments: true, selfCloseEmpty: true });
-      const stats = getMinifyStats(original, minified);
-      editor.setValue(minified, true);
-      updateStatus();
-      showToast(`Minified! Saved ${stats.savedBytes.toLocaleString()} B (${stats.savingsPercent}%)`, 'success');
-    } catch (e) {
-      showToast(`Minify error: ${e.message}`, 'error');
-    }
-  });
-
-  // Validate
-  document.getElementById('btn-popup-validate').addEventListener('click', () => {
-    const xml = editor.getValue();
-    const res = validateXml(xml);
-    if (res.valid) {
-      showToast(`Valid XML: <${res.rootTag}> (${res.elementCount} elem)`, 'success');
-    } else {
-      showToast(`Invalid: ${res.errors[0]?.message || 'Syntax error'}`, 'error');
-    }
-    updateStatus();
-  });
-
-  // Samples Select
-  const sampleSelect = document.getElementById('select-popup-sample');
-  if (sampleSelect) {
-    sampleSelect.addEventListener('change', (e) => {
-      const sampleKey = e.target.value;
-      if (sampleKey && XML_SAMPLES[sampleKey]) {
-        editor.setValue(XML_SAMPLES[sampleKey].xml, true);
-        updateStatus();
-        showToast(`Loaded ${XML_SAMPLES[sampleKey].name} sample`, 'info');
-        sampleSelect.value = '';
-      }
-    });
-  }
-
-  // Copy XML
-  document.getElementById('btn-popup-copy').addEventListener('click', () => {
-    const text = editor.getValue();
-    if (!text) {
-      showToast('Nothing to copy', 'warning');
-      return;
-    }
-    navigator.clipboard.writeText(text);
-    showToast('Copied XML to clipboard', 'success');
-  });
-
-  // Download XML
-  document.getElementById('btn-popup-download').addEventListener('click', () => {
-    const text = editor.getValue();
-    if (!text.trim()) {
-      showToast('No XML content to download', 'warning');
-      return;
-    }
-    const blob = new Blob([text], { type: 'application/xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'document.xml';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Downloaded document.xml', 'success');
-  });
-
-  // Clear Editor
-  document.getElementById('btn-popup-clear').addEventListener('click', () => {
-    if (!editor.getValue().trim()) return;
-    if (confirm('Clear XML editor content?')) {
-      editor.setValue('', true);
-      updateStatus();
-      showToast('Editor cleared', 'info');
-    }
-  });
-
-  // Copy JSON Output
-  const btnCopyJson = document.getElementById('btn-popup-copy-json');
-  if (btnCopyJson) {
-    btnCopyJson.addEventListener('click', () => {
-      const jsonText = jsonOutput.value;
-      if (!jsonText) return;
-      navigator.clipboard.writeText(jsonText);
-      showToast('Copied JSON to clipboard', 'success');
-    });
-  }
-
-  // Refresh active view data
-  function refreshView() {
-    const xml = editor.getValue();
-    if (activeTab === 'tree') {
-      treeView.loadXml(xml);
-    } else if (activeTab === 'chart') {
-      chartView.loadXml(xml);
-    } else if (activeTab === 'json') {
-      if (!xml.trim()) {
-        jsonOutput.value = '';
+      const currentTab = tabs && tabs[0];
+      if (!currentTab || !currentTab.url) {
+        if (tabBadge) tabBadge.textContent = 'No active tab';
+        if (tabUrlEl) tabUrlEl.textContent = 'Ready to convert';
         return;
       }
+
+      activeTabUrl = currentTab.url;
+      activeTabId = currentTab.id;
+      let detectedFormat = detectUrlFormat(activeTabUrl);
+
+      // Clean display URL (e.g. hostname + pathname)
+      let displayUrl = activeTabUrl;
       try {
-        const json = xmlToJson(xml, { mode: 'clean', parsePrimitives: true });
-        jsonOutput.value = JSON.stringify(json, null, 2);
-      } catch (err) {
-        jsonOutput.value = `// Error converting to JSON:\n// ${err.message}`;
+        const parsed = new URL(activeTabUrl);
+        displayUrl = parsed.hostname + parsed.pathname;
+        if (displayUrl.length > 36) {
+          displayUrl = '...' + displayUrl.slice(-33);
+        }
+      } catch (_) {}
+
+      if (tabUrlEl) tabUrlEl.textContent = displayUrl;
+
+      // Inspect DOM for raw data responses
+      if (chrome.scripting && activeTabId) {
+        try {
+          const results = await chrome.scripting.executeScript({
+            target: { tabId: activeTabId },
+            func: () => {
+              const ct = (document.contentType || '').toLowerCase();
+              let text = '';
+              const pre = document.querySelector('pre');
+              if (pre && pre.textContent) text = pre.textContent;
+              else if (document.body && document.body.textContent) text = document.body.textContent;
+              text = text.replace(/^Pretty-print\s*/i, '').trim().slice(0, 1000);
+              return { contentType: ct, snippet: text };
+            }
+          });
+          if (results && results[0] && results[0].result) {
+            const { contentType, snippet } = results[0].result;
+            if (contentType.includes('json') || snippet.startsWith('{') || snippet.startsWith('[')) {
+              detectedFormat = 'json';
+            } else if (contentType.includes('xml') || snippet.startsWith('<?xml') || /^<[a-zA-Z][\w:-]*/.test(snippet)) {
+              detectedFormat = 'xml';
+            } else if (contentType.includes('yaml') || /^[a-zA-Z0-9_-]+\s*:\s*.+/m.test(snippet)) {
+              detectedFormat = 'yaml';
+            } else if (contentType.includes('csv')) {
+              detectedFormat = 'csv';
+            } else if (contentType.includes('markdown') || /^#{1,6}\s+/m.test(snippet)) {
+              detectedFormat = 'markdown';
+            } else if (contentType.includes('text/plain')) {
+              detectedFormat = detectedFormat || 'txt';
+            }
+          }
+        } catch (_) {}
       }
+
+      activeTabFormat = detectedFormat;
+
+      if (detectedFormat) {
+        const badgeNames = {
+          xml: 'XML Found',
+          json: 'JSON Found',
+          yaml: 'YAML Found',
+          csv: 'CSV Found',
+          markdown: 'Markdown Found',
+          txt: 'TXT Found'
+        };
+        if (tabBadge) {
+          tabBadge.textContent = badgeNames[detectedFormat] || `${detectedFormat.toUpperCase()} Found`;
+          tabBadge.classList.add('format-found', 'xml-found');
+        }
+        if (btnTabStudioText) {
+          btnTabStudioText.textContent = `Open ${detectedFormat.toUpperCase()}`;
+        }
+      } else {
+        if (tabBadge) {
+          tabBadge.textContent = 'Web Page';
+          tabBadge.classList.remove('format-found', 'xml-found');
+        }
+        if (btnTabStudioText) {
+          btnTabStudioText.textContent = 'Open XML Studio';
+        }
+      }
+    });
+  }
+
+  // Open Studio from Active Tab Card
+  if (btnTabStudio) {
+    btnTabStudio.addEventListener('click', () => {
+      let targetUrl = 'index.html';
+      if (activeTabFormat && activeTabUrl) {
+        targetUrl = `index.html?url=${encodeURIComponent(activeTabUrl)}&autoformat=1&format=${encodeURIComponent(activeTabFormat)}`;
+      }
+      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.create) {
+        chrome.tabs.create({ url: targetUrl });
+      } else {
+        window.open(targetUrl, '_blank');
+      }
+    });
+  }
+
+  // Open Side Panel from Active Tab Card
+  if (btnTabSidepanel) {
+    btnTabSidepanel.addEventListener('click', () => {
+      if (typeof chrome !== 'undefined' && chrome.sidePanel && activeTabId) {
+        chrome.sidePanel.open({ tabId: activeTabId });
+        window.close();
+      } else {
+        showToast('Side Panel available in browser', 'info');
+      }
+    });
+  }
+
+  // 4. Multi-Format Grid Exporter (Active Tab Data or Clipboard Data)
+  async function getSourceData() {
+    // Strategy 1: Try reading raw text from the active browser tab
+    if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting && activeTabId) {
+      try {
+        const results = await chrome.scripting.executeScript({
+          target: { tabId: activeTabId },
+          func: () => {
+            const pre = document.querySelector('pre');
+            if (pre && pre.textContent && pre.textContent.trim()) {
+              return pre.textContent.trim().replace(/^Pretty-print\s*/i, '').trim();
+            }
+            const webkitXml = document.querySelector('#webkit-xml-viewer-source-xml');
+            if (webkitXml && (webkitXml.textContent || webkitXml.outerHTML)) {
+              return (webkitXml.textContent || webkitXml.outerHTML).trim();
+            }
+            if (document.documentElement && document.documentElement.tagName.toLowerCase() !== 'html') {
+              const clone = document.documentElement.cloneNode(true);
+              if (clone.querySelector) {
+                const frame = clone.querySelector('#xml-pro-reader-frame');
+                if (frame) frame.remove();
+                const btn = clone.querySelector('#xml-pro-floating-btn');
+                if (btn) btn.remove();
+              }
+              return new XMLSerializer().serializeToString(clone).trim();
+            }
+            if (document.body && document.body.textContent) {
+              return document.body.textContent.trim().replace(/^Pretty-print\s*/i, '').trim();
+            }
+            return '';
+          }
+        });
+        if (results && results[0] && results[0].result && results[0].result.trim()) {
+          const raw = results[0].result.trim();
+          const format = activeTabFormat || detectFormat(raw);
+          return { raw, format };
+        }
+      } catch (_) {}
+    }
+
+    // Strategy 2: Fetch directly if active tab has a data URL
+    if (activeTabUrl && activeTabFormat) {
+      try {
+        const res = await fetch(activeTabUrl);
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.trim()) {
+            const clean = text.trim();
+            return { raw: clean, format: activeTabFormat || detectFormat(clean) };
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Strategy 3: Fallback to clipboard
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      try {
+        const clipText = await navigator.clipboard.readText();
+        if (clipText && clipText.trim()) {
+          const clean = clipText.trim();
+          return { raw: clean, format: detectFormat(clean) };
+        }
+      } catch (_) {}
+    }
+
+    return null;
+  }
+
+  function convertDataToXml(raw, format) {
+    if (!raw) return '<root/>';
+    if (format === 'xml') return raw;
+
+    try {
+      switch (format) {
+        case 'json': {
+          const obj = JSON.parse(raw);
+          return jsonToXml(obj, { rootTag: 'root' });
+        }
+        case 'yaml':
+          return yamlToXml(raw, { rootTag: 'root' });
+        case 'csv':
+          return csvToXml(raw, { rootTag: 'records', itemTag: 'row' });
+        case 'markdown':
+          return markdownToXml(raw, { rootTag: 'document' });
+        case 'txt':
+          return txtToXml(raw, { rootTag: 'document' });
+        default:
+          return `<root><raw>${raw}</raw></root>`;
+      }
+    } catch (_) {
+      return `<root><raw>${raw}</raw></root>`;
     }
   }
 
-  // Tabs Switching
-  const tabs = document.querySelectorAll('.popup-tabs .tab-btn');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeTab = tab.dataset.tab;
+  async function handleCopyAsFormat(targetFormat) {
+    try {
+      const source = await getSourceData();
+      if (!source || !source.raw) {
+        showToast('No data on tab or clipboard', 'error');
+        return;
+      }
 
-      document.getElementById('popup-pane-editor').classList.toggle('hidden', activeTab !== 'editor');
-      document.getElementById('popup-pane-tree').classList.toggle('hidden', activeTab !== 'tree');
-      document.getElementById('popup-pane-chart').classList.toggle('hidden', activeTab !== 'chart');
-      document.getElementById('popup-pane-json').classList.toggle('hidden', activeTab !== 'json');
+      const { raw, format: srcFormat } = source;
+      let output = '';
+      const formatNames = {
+        txt: 'TXT',
+        xml: 'XML',
+        markdown: 'Markdown',
+        json: 'JSON',
+        csv: 'CSV',
+        yaml: 'YAML'
+      };
+      const formatName = formatNames[targetFormat] || targetFormat.toUpperCase();
 
-      refreshView();
+      // If source and target formats are identical, just prettify
+      if (srcFormat === targetFormat) {
+        if (targetFormat === 'json') {
+          try {
+            output = JSON.stringify(JSON.parse(raw), null, 2);
+          } catch (_) {
+            output = raw;
+          }
+        } else if (targetFormat === 'xml') {
+          try {
+            output = formatXml(raw, { indent: '  ', preserveComments: true, entities: 'auto' });
+          } catch (_) {
+            output = raw;
+          }
+        } else {
+          output = raw;
+        }
+      } else {
+        // Convert to intermediate XML first
+        const xml = convertDataToXml(raw, srcFormat);
+
+        switch (targetFormat) {
+          case 'txt':
+            output = xmlToTxt(xml);
+            break;
+          case 'xml':
+            output = formatXml(xml, { indent: '  ', preserveComments: true, entities: 'auto' });
+            break;
+          case 'markdown':
+            output = xmlToMarkdown(xml);
+            break;
+          case 'json': {
+            const jsonObj = xmlToJson(xml, { mode: 'clean' });
+            output = JSON.stringify(jsonObj, null, 2);
+            break;
+          }
+          case 'csv':
+            output = xmlToCsv(xml, ',');
+            break;
+          case 'yaml':
+            output = xmlToYaml(xml);
+            break;
+          default:
+            throw new Error(`Unsupported format: ${targetFormat}`);
+        }
+      }
+
+      if (!output || !output.trim()) {
+        showToast(`Empty ${formatName} output`, 'error');
+        return;
+      }
+
+      await navigator.clipboard.writeText(output);
+      showToast(`Copied as ${formatName} to clipboard!`, 'success');
+    } catch (err) {
+      showToast(`Conversion failed: ${err.message}`, 'error');
+    }
+  }
+
+  // Bind Quick Tools grid buttons
+  document.querySelectorAll('.quick-tool-btn[data-format]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      handleCopyAsFormat(btn.dataset.format);
     });
   });
 });

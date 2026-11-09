@@ -1,216 +1,209 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>XML Pro Toolkit</title>
   <link rel="stylesheet" href="css/app.css" />
-  <link rel="stylesheet" href="css/editor.css" />
-  <link rel="stylesheet" href="css/tree-view.css" />
-  <link rel="stylesheet" href="css/chart.css" />
   <link rel="stylesheet" href="css/popup.css" />
+  <link rel="icon" type="image/x-icon" href="fav.ico" />
+  <link rel="shortcut icon" href="fav.ico" />
 </head>
+
 <body class="popup-body">
   <!-- Brand Header -->
   <header class="popup-header">
     <div class="popup-brand">
       <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
+        <img src="fav.ico" class="brand-logo-img" alt="XML Pro Logo" width="20" height="20" />
       </div>
       <div class="brand-title-wrap">
         <span class="popup-title">XML Pro</span>
-        <span class="brand-badge">Popup</span>
+        <span class="brand-badge">v1.0</span>
       </div>
-    </div>
-
-    <!-- Live Validation Badge -->
-    <div class="header-center">
-      <div id="popup-status-badge" class="val-badge val-badge-empty" title="Validation status">Ready</div>
     </div>
 
     <!-- Top Action Icons -->
     <div class="popup-actions-top">
       <a href="docs.html" target="_blank" class="btn-icon" title="Documentation" aria-label="Documentation">
         <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804V12a1 1 0 11-2 0V4.804z"/>
+          <path
+            d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804V12a1 1 0 11-2 0V4.804z" />
         </svg>
       </a>
-      <button type="button" id="btn-popup-open-full" class="btn-icon" title="Open Full Studio in Tab" aria-label="Open Full Studio">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
-          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
-        </svg>
-      </button>
-      <button type="button" id="btn-popup-theme" class="btn-icon theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">
+      <button type="button" id="btn-popup-theme" class="btn-icon theme-toggle-btn" title="Toggle Dark/Light Theme"
+        aria-label="Toggle Theme">
         <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
         </svg>
       </button>
     </div>
   </header>
 
-  <!-- Action Toolbar -->
-  <nav class="popup-toolbar">
-    <div class="toolbar-group">
-      <!-- Format Split Button -->
-      <div class="split-btn-group" id="popup-format-split-group">
-        <button type="button" id="btn-popup-format" class="btn-secondary btn-sm split-main-btn" title="Format / Prettify XML (Alt+Shift+F)" aria-label="Format XML">
-          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-          </svg>
-        </button>
-        <button type="button" id="btn-popup-format-dropdown" class="btn-secondary btn-sm split-toggle-btn" aria-label="Format Options" title="Format Options (Entities)">
-          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-          </svg>
-        </button>
-        <div class="dropdown-menu hidden" id="popup-format-dropdown-menu">
-          <button type="button" class="dropdown-item" data-entity-mode="auto">
-            <span class="dropdown-item-title">Format (Prettify)</span>
-            <span class="dropdown-item-desc">Standard indentation</span>
-          </button>
-          <button type="button" class="dropdown-item" data-entity-mode="named">
-            <span class="dropdown-item-title">Named Entities</span>
-            <span class="dropdown-item-desc">Escape &amp;, &lt;, &gt;, &quot;, &apos;</span>
-          </button>
-          <button type="button" class="dropdown-item" data-entity-mode="numeric">
-            <span class="dropdown-item-title">Numeric Entities</span>
-            <span class="dropdown-item-desc">Escape non-ASCII as &amp;#160;</span>
-          </button>
-          <button type="button" class="dropdown-item" data-entity-mode="hex">
-            <span class="dropdown-item-title">Hex Entities</span>
-            <span class="dropdown-item-desc">Escape non-ASCII as &amp;#xA0;</span>
-          </button>
-          <div class="dropdown-divider"></div>
-          <button type="button" class="dropdown-item" data-entity-mode="decode">
-            <span class="dropdown-item-title">Decode Entities</span>
-            <span class="dropdown-item-desc">Restore character references</span>
-          </button>
-        </div>
+  <!-- Extension Power / Enable-Disable Switch Banner -->
+  <section class="popup-power-banner" id="popup-power-banner" aria-label="Extension Status">
+    <div class="power-banner-left">
+      <span class="power-status-dot active" id="popup-power-dot"></span>
+      <div class="power-banner-text">
+        <span class="power-title" id="popup-power-title">Extension Enabled</span>
+        <span class="power-subtitle" id="popup-power-subtitle">Auto-formats XML documents in browser</span>
       </div>
+    </div>
+    <div class="power-banner-right">
+      <label class="power-toggle-switch" title="Toggle Extension On or Off" aria-label="Toggle Extension">
+        <input type="checkbox" id="popup-power-checkbox" checked />
+        <span class="power-toggle-slider"></span>
+      </label>
+    </div>
+  </section>
 
-      <!-- Minify -->
-      <button type="button" id="btn-popup-minify" class="btn-secondary btn-sm" title="Minify XML" aria-label="Minify XML">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-        </svg>
-      </button>
-
-      <!-- Validate -->
-      <button type="button" id="btn-popup-validate" class="btn-secondary btn-sm" title="Validate XML well-formedness" aria-label="Validate XML">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-        </svg>
-      </button>
-
-      <div class="toolbar-divider"></div>
-
-      <!-- Sample Picker -->
-      <select id="select-popup-sample" class="select-sm" title="Load sample dataset" style="max-width: 95px;">
-        <option value="" disabled selected>Samples...</option>
-        <option value="ecommerce">E-Commerce</option>
-        <option value="catalog">Book Catalog</option>
-        <option value="sitemap">Sitemap</option>
-        <option value="rss">RSS Feed</option>
-        <option value="svg">SVG Graphic</option>
-      </select>
+  <!-- Main Popup Hub Content -->
+  <main class="popup-hub-body">
+    <!-- Active Tab XML Status Card -->
+    <div class="popup-tab-status-card" id="popup-tab-card">
+      <div class="tab-card-header">
+        <span class="tab-card-label" id="tab-card-label">Active Tab</span>
+        <span class="tab-card-badge" id="tab-card-badge">Scanning...</span>
+      </div>
+      <div class="tab-card-url" id="tab-card-url">Checking active page...</div>
+      <div class="tab-card-actions" id="tab-card-actions">
+        <button type="button" id="btn-tab-open-studio" class="btn-primary btn-sm flex-1"
+          title="Open in full XML Pro Studio">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm icon icon-tabler icons-tabler-outline icon-tabler-cash-edit">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M7 15h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v3" />
+            <path d="M11 19h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v1.25" />
+            <path d="M18.42 15.61a2.1 2.1 0 1 1 2.97 2.97l-3.39 3.42h-3v-3l3.42 -3.39" />
+          </svg>
+          <span id="btn-tab-open-studio-text">Open XML Studio</span>
+        </button>
+        <button type="button" id="btn-tab-open-sidepanel" class="btn-secondary btn-sm" title="Inspect in Side Panel">
+          <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm10 2v8h2V6h-2z" />
+          </svg>
+          <span>Side Panel</span>
+        </button>
+      </div>
     </div>
 
-    <div class="toolbar-group">
-      <!-- Copy -->
-      <button type="button" id="btn-popup-copy" class="btn-secondary btn-sm" title="Copy to clipboard" aria-label="Copy to clipboard">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-          <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
-        </svg>
-      </button>
-
-      <!-- Download -->
-      <button type="button" id="btn-popup-download" class="btn-secondary btn-sm" title="Download file" aria-label="Download file">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
-        </svg>
-      </button>
-
-      <!-- Clear -->
-      <button type="button" id="btn-popup-clear" class="btn-secondary btn-sm" title="Clear content" aria-label="Clear content">
-        <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-        </svg>
-      </button>
-    </div>
-  </nav>
-
-  <!-- Modern Tabs -->
-  <div class="popup-tabs">
-    <button type="button" class="tab-btn active" data-tab="editor" title="XML Code Editor">
-      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
-      </svg>
-      <span>Editor</span>
-    </button>
-    <button type="button" class="tab-btn" data-tab="tree" title="Interactive DOM Tree">
-      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-      </svg>
-      <span>Tree</span>
-    </button>
-    <button type="button" class="tab-btn" data-tab="chart" title="Interactive Diagram & Schema Chart">
-      <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-      </svg>
-      <span>Chart</span>
-    </button>
-    <button type="button" class="tab-btn" data-tab="json" title="JSON Conversion Preview">
-      <img src="icons/json.png" class="tab-format-icon" alt="JSON" />
-      <span>JSON</span>
-    </button>
-  </div>
-
-  <!-- Content Panes -->
-  <main class="popup-content">
-    <div id="popup-pane-editor" class="tab-pane active" style="height: 100%;">
-      <div id="popup-editor-mount" style="height: 100%;"></div>
-    </div>
-
-    <div id="popup-pane-tree" class="tab-pane hidden" style="height: 100%;">
-      <div id="popup-tree-container" class="popup-preview"></div>
-    </div>
-
-    <div id="popup-pane-chart" class="tab-pane hidden" style="height: 100%;">
-      <div id="popup-chart-container" class="popup-preview" style="height: 100%;"></div>
-    </div>
-
-    <div id="popup-pane-json" class="tab-pane hidden" style="height: 100%;">
-      <div class="popup-json-pane">
-        <div class="popup-json-toolbar">
-          <span class="popup-json-badge">JSON Format</span>
-          <button type="button" id="btn-popup-copy-json" class="btn-icon" title="Copy JSON to clipboard" aria-label="Copy JSON to clipboard">
-            <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-              <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+    <!-- Quick Tools Grid Section -->
+    <div class="popup-quick-section">
+      <div class="section-label">Quick Tools</div>
+      <div class="quick-tools-grid">
+        <!-- 1. Copy as TXT format -->
+        <button type="button" class="quick-tool-btn" id="btn-copy-txt" data-format="txt"
+          title="Convert XML and copy as TXT format">
+          <div class="tool-icon-wrap tool-icon-txt">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                clip-rule="evenodd" />
             </svg>
-          </button>
-        </div>
-        <textarea id="popup-json-output" class="popup-textarea" readonly spellcheck="false" placeholder="Converted JSON will appear here..."></textarea>
+          </div>
+          <div class="tool-info">
+            <span class="tool-title">Copy as TXT</span>
+            <span class="tool-desc">Plain outline tree</span>
+          </div>
+        </button>
+
+        <!-- 2. Copy as XML Format -->
+        <button type="button" class="quick-tool-btn" id="btn-copy-xml" data-format="xml"
+          title="Prettify and copy as XML Format">
+          <div class="tool-icon-wrap tool-icon-xml">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
+                clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="tool-info">
+            <span class="tool-title">Copy as XML</span>
+            <span class="tool-desc">Formatted & indented</span>
+          </div>
+        </button>
+
+        <!-- 3. Copy as Markdown Format -->
+        <button type="button" class="quick-tool-btn" id="btn-copy-md" data-format="markdown"
+          title="Convert XML and copy as Markdown Format">
+          <div class="tool-icon-wrap tool-icon-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-markdown">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" />
+              <path d="M7 15v-6l2 2l2 -2v6" />
+              <path d="M14 13l2 2l2 -2m-2 2v-6" />
+            </svg>
+          </div>
+          <div class="tool-info">
+            <span class="tool-title">Copy as MD</span>
+            <span class="tool-desc">Tables & outlines</span>
+          </div>
+        </button>
+
+        <!-- 4. Copy as JSON -->
+        <button type="button" class="quick-tool-btn" id="btn-copy-json" data-format="json"
+          title="Convert and copy as JSON">
+          <div class="tool-icon-wrap tool-icon-json">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-braces">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M7 4a2 2 0 0 0 -2 2v3a2 3 0 0 1 -2 3a2 3 0 0 1 2 3v3a2 2 0 0 0 2 2" />
+              <path d="M17 4a2 2 0 0 1 2 2v3a2 3 0 0 0 2 3a2 3 0 0 0 -2 3v3a2 2 0 0 1 -2 2" />
+            </svg>
+          </div>
+          <div class="tool-info">
+            <span class="tool-title">Copy as JSON</span>
+            <span class="tool-desc">Clean object structure</span>
+          </div>
+        </button>
+
+        <!-- 5. Copy as CSV -->
+        <button type="button" class="quick-tool-btn" id="btn-copy-csv" data-format="csv"
+          title="Convert XML and copy as CSV">
+          <div class="tool-icon-wrap tool-icon-csv">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M5 4a1 1 0 00-2 0v12a1 1 0 002 0V4zm5 0a1 1 0 00-2 0v12a1 1 0 002 0V4zm5 0a1 1 0 00-2 0v12a1 1 0 002 0V4zM2 7a1 1 0 100 2h16a1 1 0 100-2H2zm0 6a1 1 0 100 2h16a1 1 0 100-2H2z"
+                clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="tool-info">
+            <span class="tool-title">Copy as CSV</span>
+            <span class="tool-desc">Tabular dataset</span>
+          </div>
+        </button>
+
+        <!-- 6. Copy as Yaml -->
+        <button type="button" class="quick-tool-btn" id="btn-copy-yaml" data-format="yaml"
+          title="Convert XML and copy as Yaml">
+          <div class="tool-icon-wrap tool-icon-yaml">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm8 0a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1V4zm-8 8a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm7.5-6H10v8h1.5a1 1 0 110 2h-4a1 1 0 110-2H9V6h-.5a1 1 0 010-2h3a1 1 0 010 2z"
+                clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="tool-info">
+            <span class="tool-title">Copy as Yaml</span>
+            <span class="tool-desc">Indented document</span>
+          </div>
+        </button>
       </div>
     </div>
   </main>
 
-  <!-- Sleek Status Bar -->
-  <footer class="popup-status-bar">
-    <div class="status-left">
-      <span id="popup-size-info">0 B</span>
-      <span class="status-sep">·</span>
-      <span id="popup-lines-info">0 lines</span>
-    </div>
-    <div class="status-right">
-      <span id="popup-elem-count">0 elem</span>
+  <!-- Compact Shortcuts Footer -->
+  <footer class="popup-hub-footer">
+    <div class="footer-shortcuts">
+      <span class="shortcut-item"><kbd>Alt+1</kbd> Tree</span>
+      <span class="shortcut-item"><kbd>Alt+2</kbd> Chart</span>
+      <span class="shortcut-item"><kbd>Alt+3</kbd> Raw</span>
     </div>
   </footer>
 
+  <!-- Toast Notification -->
+  <div class="popup-toast" id="popup-toast"></div>
+
   <script type="module" src="popup.js"></script>
 </body>
+
 </html>
