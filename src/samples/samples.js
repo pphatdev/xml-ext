@@ -162,7 +162,7 @@ export const XML_SAMPLES = {
   <rect width="100%" height="100%" rx="12" fill="#0f172a"/>
   <circle cx="200" cy="110" r="60" fill="url(#gradient1)"/>
   <text x="200" y="200" font-family="system-ui, sans-serif" font-size="20" font-weight="bold" fill="#f8fafc" text-anchor="middle">
-    XML Pro Studio
+    XML Pro
   </text>
   <text x="200" y="225" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">
     Editor | Linter | Tree | Converter
