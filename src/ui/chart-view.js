@@ -72,14 +72,26 @@ export class XmlChartView {
                 <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
               </svg>
             </button>
-            <button type="button" id="btn-chart-expand-all" class="btn-sm" title="Expand all nodes">
-              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"/>
+            <button type="button" id="btn-chart-collapse-all" class="btn-sm" title="Collapse all nodes" aria-label="Collapse all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-fold">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M12 3v6l3 -3m-6 0l3 3" />
+                <path d="M12 21v-6l3 3m-6 0l3 -3" />
+                <path d="M4 12l1 0" />
+                <path d="M9 12l1 0" />
+                <path d="M14 12l1 0" />
+                <path d="M19 12l1 0" />
               </svg>
             </button>
-            <button type="button" id="btn-chart-collapse-all" class="btn-sm" title="Collapse all nodes">
-              <svg class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd"/>
+            <button type="button" id="btn-chart-expand-all" class="btn-sm" title="Expand all nodes" aria-label="Expand all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-unfold">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M12 9V3M15 6L12 3L9 6" />
+                <path d="M12 15V21M15 18L12 21L9 18" />
+                <path d="M4 12H5" />
+                <path d="M9 12H10" />
+                <path d="M14 12H15" />
+                <path d="M19 12H20" />
               </svg>
             </button>
             <button type="button" id="btn-chart-fit" class="btn-sm" title="Fit diagram to screen (auto-center and scale)">
@@ -132,6 +144,34 @@ export class XmlChartView {
     this.initTabs();
     this.initPanZoom();
     this.initToolbarButtons();
+    this.initResizeHandling();
+  }
+
+  initResizeHandling() {
+    // Auto-fit on container resize (dragging split resizer, window resize, tab visibility)
+    if (typeof ResizeObserver !== 'undefined' && this.canvasWrap) {
+      let rAF = null;
+      this.resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          if (width > 50 && height > 50) {
+            if (rAF) cancelAnimationFrame(rAF);
+            rAF = requestAnimationFrame(() => {
+              if (this.currentData || this.cardFlowData) {
+                this.fitToView(false);
+              }
+            });
+          }
+        }
+      });
+      this.resizeObserver.observe(this.canvasWrap);
+    }
+
+    window.addEventListener('resize', () => {
+      if (this.currentData || this.cardFlowData) {
+        this.fitToView(false);
+      }
+    });
   }
 
   initTabs() {
@@ -143,6 +183,17 @@ export class XmlChartView {
         this.activeChartType = tab.dataset.chart;
         this.refreshChart();
       });
+    }
+  }
+
+  setChartType(type) {
+    if (['card-flow', 'hierarchy', 'mermaid', 'graph', 'frequency', 'depth'].includes(type)) {
+      this.activeChartType = type;
+      const tabs = this.container.querySelectorAll('.chart-type-tabs .tab-btn');
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.chart === type));
+      if (this.currentData) {
+        this.refreshChart();
+      }
     }
   }
 
@@ -184,7 +235,7 @@ export class XmlChartView {
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      const newScale = Math.min(3.5, Math.max(0.2, this.scale * zoomFactor));
+      const newScale = Math.min(3.5, Math.max(0.04, this.scale * zoomFactor));
 
       // Zoom towards mouse position
       this.panX = mouseX - (mouseX - this.panX) * (newScale / this.scale);
@@ -202,7 +253,7 @@ export class XmlChartView {
     });
 
     this.container.querySelector('#btn-zoom-out').addEventListener('click', () => {
-      this.scale = Math.max(0.2, this.scale * 0.83);
+      this.scale = Math.max(0.04, this.scale * 0.83);
       this.updateViewportTransform();
     });
 
@@ -377,6 +428,9 @@ export class XmlChartView {
     } else if (this.activeChartType === 'depth') {
       this.renderDepthChart(this.currentData.depthDistribution);
     }
+
+    // Auto-fit diagram inside container
+    this.fitToView(false);
   }
 
   /**
@@ -885,56 +939,72 @@ export class XmlChartView {
   }
 
   fitToView(showNotice = false) {
-    let fitted = false;
+    if (!this.viewportGroup) return false;
 
-    try {
-      if (this.viewportGroup && typeof this.viewportGroup.getBBox === 'function') {
-        const bbox = this.viewportGroup.getBBox();
-        const containerWidth = this.canvasWrap?.clientWidth || this.svgRoot?.clientWidth || 0;
-        const containerHeight = this.canvasWrap?.clientHeight || this.svgRoot?.clientHeight || 0;
+    const measureAndFit = () => {
+      let fitted = false;
 
-        if (bbox.width > 0 && bbox.height > 0 && containerWidth > 80 && containerHeight > 80) {
-          const padding = 50;
-          const availWidth = Math.max(50, containerWidth - padding * 2);
-          const availHeight = Math.max(50, containerHeight - padding * 2);
+      try {
+        if (typeof this.viewportGroup.getBBox === 'function') {
+          const bbox = this.viewportGroup.getBBox();
+          const rect = this.canvasWrap?.getBoundingClientRect?.() || {};
+          const containerWidth = rect.width || this.canvasWrap?.clientWidth || this.svgRoot?.clientWidth || 0;
+          const containerHeight = rect.height || this.canvasWrap?.clientHeight || this.svgRoot?.clientHeight || 0;
 
-          const scaleX = availWidth / bbox.width;
-          const scaleY = availHeight / bbox.height;
+          if (bbox.width > 0 && bbox.height > 0 && containerWidth > 40 && containerHeight > 40) {
+            const paddingX = Math.max(16, Math.min(48, containerWidth * 0.05));
+            const paddingY = Math.max(16, Math.min(48, containerHeight * 0.05));
+            const availWidth = Math.max(20, containerWidth - paddingX * 2);
+            const availHeight = Math.max(20, containerHeight - paddingY * 2);
 
-          // Comfortable scale range: not over-enlarging small trees, scaling down wide ones
-          const targetScale = Math.min(Math.max(0.15, Math.min(scaleX, scaleY)), 1.15);
+            const scaleX = availWidth / bbox.width;
+            const scaleY = availHeight / bbox.height;
 
-          // Center the bounding box within the container
-          const targetPanX = (containerWidth - bbox.width * targetScale) / 2 - bbox.x * targetScale;
-          const targetPanY = (containerHeight - bbox.height * targetScale) / 2 - bbox.y * targetScale;
+            // Comfortable scale range: scale down as much as needed (down to 0.04) so massive charts fit
+            const targetScale = Math.min(Math.max(0.04, Math.min(scaleX, scaleY)), 1.15);
 
-          this.scale = targetScale;
-          this.panX = targetPanX;
-          this.panY = targetPanY;
-          this.updateViewportTransform();
-          fitted = true;
+            // Center the bounding box within the container
+            const targetPanX = (containerWidth - bbox.width * targetScale) / 2 - bbox.x * targetScale;
+            const targetPanY = (containerHeight - bbox.height * targetScale) / 2 - bbox.y * targetScale;
+
+            this.scale = targetScale;
+            this.panX = targetPanX;
+            this.panY = targetPanY;
+            this.updateViewportTransform();
+            fitted = true;
+          }
         }
+      } catch (_) {
+        fitted = false;
       }
-    } catch (_) {
-      fitted = false;
-    }
 
-    if (!fitted) {
-      if (this.activeChartType === 'card-flow') {
-        this.panX = 60;
-        this.panY = 60;
-        this.scale = 0.95;
-      } else {
-        this.panX = 140;
-        this.panY = 120;
-        this.scale = 1.0;
+      if (!fitted) {
+        if (this.activeChartType === 'card-flow') {
+          this.panX = 40;
+          this.panY = 40;
+          this.scale = 0.95;
+        } else {
+          this.panX = 80;
+          this.panY = 80;
+          this.scale = 1.0;
+        }
+        this.updateViewportTransform();
       }
-      this.updateViewportTransform();
-    }
 
-    if (showNotice) {
-      showToast('Chart fitted to screen', 'info');
+      if (showNotice && fitted) {
+        showToast('Chart fitted to screen', 'info');
+      }
+      return fitted;
+    };
+
+    const immediate = measureAndFit();
+    // Schedule a second pass on requestAnimationFrame so layout/font rendering is fully settled
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => {
+        measureAndFit();
+      });
     }
+    return immediate;
   }
 
   generateMermaidCode(root) {

@@ -90,7 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
     updateValidationBadge(xml);
 
     if (activeView === 'tree') treeView.loadXml(xml);
-    else if (activeView === 'chart') chartView.loadXml(xml);
+    else if (activeView === 'chart') {
+      chartView.loadXml(xml);
+      if (typeof requestAnimationFrame !== 'undefined') {
+        requestAnimationFrame(() => chartView.fitToView(false));
+      }
+    }
     else if (activeView === 'converter') converterView.loadXml(xml);
     else if (activeView === 'linter') linterView.lint(xml);
     else if (activeView === 'analyzer') analyzerView.analyze(xml);

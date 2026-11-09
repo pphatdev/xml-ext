@@ -40,9 +40,13 @@ body.sidepanel-body {
   min-width: 24px;
 }
 
-.sidepanel-header .brand-icon svg {
-  width: 14px;
-  height: 14px;
+.sidepanel-header .brand-icon svg,
+.sidepanel-header .brand-icon img {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  object-fit: contain;
+  display: block;
 }
 
 .sidepanel-header .brand-title-wrap {

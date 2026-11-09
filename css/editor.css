@@ -139,6 +139,7 @@
 
 .editor-textarea-wrap {
   flex: 1;
+  padding: 5px;
   display: flex;
   position: relative;
   overflow: hidden;
