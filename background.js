@@ -1,14 +1,11 @@
 /**
  * Chrome Extension Background Service Worker (Manifest V3)
- * Handles auto-formatting on opening .xml links, webNavigation interception,
- * CORS proxying, and context menus.
+ * Handles in-place XML reader execution, context menus,
+ * storage preferences, and CORS proxy fetching.
  */
 
-// Cache recent redirects to prevent duplicate navigations
-const redirectCache = new Map();
-
-// Helper to check if a URL is an XML resource
-function isXmlTargetUrl(url) {
+// Helper to check if a URL is a supported data resource (XML, JSON, YAML, CSV, Markdown, TXT)
+function isSupportedTargetUrl(url) {
   if (!url || typeof url !== 'string') return false;
   if (
     url.startsWith('chrome') ||
@@ -19,7 +16,16 @@ function isXmlTargetUrl(url) {
   ) {
     return false;
   }
-  return /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(url);
+  return /\.(xml|rss|atom|xsd|wsdl)($|\?|#)/i.test(url) ||
+         /\/sitemap(\.xml)?($|\?|#)/i.test(url) ||
+         /\/feed(\.xml)?($|\?|#)/i.test(url) ||
+         /\/rss(\.xml)?($|\?|#)/i.test(url) ||
+         /\.(json|geojson|jsonld)($|\?|#)/i.test(url) ||
+         /\.(yaml|yml)($|\?|#)/i.test(url) ||
+         /\.(csv|tsv)($|\?|#)/i.test(url) ||
+         /\.(md|markdown)($|\?|#)/i.test(url) ||
+         /\.(txt|log)($|\?|#)/i.test(url) ||
+         /\/api\/.+/i.test(url);
 }
 
 function isRawBypassRequested(url) {
@@ -27,19 +33,52 @@ function isRawBypassRequested(url) {
   return url.includes('raw=true') || url.includes('raw=1') || url.includes('noformat=1');
 }
 
+// Manage Extension Badge and Context Menu
+function updateExtensionBadge(enabled) {
+  if (chrome.action) {
+    if (enabled) {
+      chrome.action.setBadgeText({ text: '' });
+    } else {
+      chrome.action.setBadgeText({ text: 'OFF' });
+      chrome.action.setBadgeBackgroundColor({ color: '#ef4444' });
+    }
+  }
+}
+
+function updateContextMenuState(enabled) {
+  if (chrome.contextMenus) {
+    try {
+      chrome.contextMenus.update('toggle-extension-enabled', {
+        title: enabled ? 'Disable XML Pro Extension' : 'Enable XML Pro Extension'
+      });
+    } catch (_) {}
+  }
+}
+
+// Track tabs where script execution was already attempted
+const injectedTabs = new Set();
+
 // Initialize on extension installation
 chrome.runtime.onInstalled.addListener(() => {
   // 1. Enable auto-format by default upon installation
   if (chrome.storage && chrome.storage.local) {
     chrome.storage.local.get(['autoFormatXml'], (res) => {
+      const isEnabled = res.autoFormatXml !== false;
       if (res.autoFormatXml === undefined) {
         chrome.storage.local.set({ autoFormatXml: true });
       }
+      updateExtensionBadge(isEnabled);
     });
   }
 
   // 2. Create Context Menus
   if (chrome.contextMenus) {
+    chrome.contextMenus.create({
+      id: 'toggle-extension-enabled',
+      title: 'Disable XML Pro Extension',
+      contexts: ['action']
+    });
+
     chrome.contextMenus.create({
       id: 'open-xml-studio',
       title: 'Open in XML Pro Studio',
@@ -60,62 +99,75 @@ chrome.runtime.onInstalled.addListener(() => {
   }
 });
 
-// Primary Interception: webNavigation.onBeforeNavigate (fires before request renders)
-if (chrome.webNavigation && chrome.webNavigation.onBeforeNavigate) {
-  chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-    // Only intercept top-level main frame navigation
-    if (details.frameId !== 0) return;
-    const targetUrl = details.url;
-    if (!targetUrl || !isXmlTargetUrl(targetUrl) || isRawBypassRequested(targetUrl)) return;
-
-    // Prevent duplicate redirection within 4 seconds
-    const last = redirectCache.get(details.tabId);
-    if (last && last.url === targetUrl && (Date.now() - last.time < 4000)) {
-      return;
-    }
-    redirectCache.set(details.tabId, { url: targetUrl, time: Date.now() });
-
-    chrome.storage.local.get(['autoFormatXml'], (data) => {
-      if (data.autoFormatXml !== false) {
-        const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(targetUrl)}&autoformat=1`);
-        chrome.tabs.update(details.tabId, { url: studioUrl });
-      }
+// Sync on browser startup
+chrome.runtime.onStartup?.addListener(() => {
+  if (chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['autoFormatXml'], (res) => {
+      const isEnabled = res.autoFormatXml !== false;
+      updateExtensionBadge(isEnabled);
+      updateContextMenuState(isEnabled);
     });
+  }
+});
+
+// Ensure in-place XML formatting runs directly in browser tab on that exact URL
+function ensureContentScriptInjected(tabId, url) {
+  if (!tabId || !url || !isSupportedTargetUrl(url) || isRawBypassRequested(url)) return;
+
+  chrome.storage.local.get(['autoFormatXml'], (data) => {
+    if (data.autoFormatXml === false) return;
+
+    if (chrome.scripting && chrome.scripting.executeScript) {
+      chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js']
+      }).then(() => {
+        injectedTabs.add(tabId);
+      }).catch(() => {
+        // Tab might be restricted or closed
+      });
+    }
   });
 }
 
-// Fallback Interception: tabs.onUpdated
+// Fallback injection on tabs.onUpdated
 if (chrome.tabs && chrome.tabs.onUpdated) {
   chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    const targetUrl = changeInfo.url || tab?.url;
-    if (!targetUrl || !isXmlTargetUrl(targetUrl) || isRawBypassRequested(targetUrl)) return;
-
-    // Prevent duplicate redirection within 4 seconds
-    const last = redirectCache.get(tabId);
-    if (last && last.url === targetUrl && (Date.now() - last.time < 4000)) {
-      return;
+    const url = changeInfo.url || tab?.url;
+    if (changeInfo.status === 'complete' && url) {
+      ensureContentScriptInjected(tabId, url);
     }
-    redirectCache.set(tabId, { url: targetUrl, time: Date.now() });
-
-    chrome.storage.local.get(['autoFormatXml'], (data) => {
-      if (data.autoFormatXml !== false) {
-        const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(targetUrl)}&autoformat=1`);
-        chrome.tabs.update(tabId, { url: studioUrl });
-      }
-    });
   });
 }
 
-// Clean up redirect cache on tab close
+// Fallback injection on webNavigation.onCompleted
+if (chrome.webNavigation && chrome.webNavigation.onCompleted) {
+  chrome.webNavigation.onCompleted.addListener((details) => {
+    if (details.frameId === 0 && details.url) {
+      ensureContentScriptInjected(details.tabId, details.url);
+    }
+  });
+}
+
+// Clean up injection cache on tab close
 if (chrome.tabs && chrome.tabs.onRemoved) {
   chrome.tabs.onRemoved.addListener((tabId) => {
-    redirectCache.delete(tabId);
+    injectedTabs.delete(tabId);
   });
 }
 
 // Handle Context Menu clicks
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'open-xml-studio') {
+  if (info.menuItemId === 'toggle-extension-enabled') {
+    chrome.storage.local.get(['autoFormatXml'], (res) => {
+      const isCurrentlyEnabled = res.autoFormatXml !== false;
+      const nextState = !isCurrentlyEnabled;
+      chrome.storage.local.set({ autoFormatXml: nextState }, () => {
+        updateExtensionBadge(nextState);
+        updateContextMenuState(nextState);
+      });
+    });
+  } else if (info.menuItemId === 'open-xml-studio') {
     if (info.linkUrl) {
       const studioUrl = chrome.runtime.getURL(`index.html?url=${encodeURIComponent(info.linkUrl)}&autoformat=1`);
       chrome.tabs.create({ url: studioUrl });
@@ -175,8 +227,11 @@ chrome.runtime?.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.type === 'SET_AUTOFORMAT_STATUS') {
-    chrome.storage.local.set({ autoFormatXml: !!request.enabled }, () => {
-      sendResponse({ success: true, autoFormatXml: !!request.enabled });
+    const nextState = !!request.enabled;
+    chrome.storage.local.set({ autoFormatXml: nextState }, () => {
+      updateExtensionBadge(nextState);
+      updateContextMenuState(nextState);
+      sendResponse({ success: true, autoFormatXml: nextState });
     });
     return true;
   }

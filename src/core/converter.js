@@ -179,10 +179,12 @@ export function jsonToXml(jsonInput, options = {}) {
     return `${curIndent}<${tagName}${attrStr}>\n${children.join('\n')}\n${curIndent}</${tagName}>`;
   }
 
-  // If top-level object has exactly one key, use that key as root tag
+  // If top-level object has exactly one key and its value is not an array, use that key as root tag
   if (data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length === 1) {
     const key = Object.keys(data)[0];
-    return `<?xml version="1.0" encoding="UTF-8"?>\n${serialize(data[key], key, 0)}`;
+    if (!Array.isArray(data[key])) {
+      return `<?xml version="1.0" encoding="UTF-8"?>\n${serialize(data[key], key, 0)}`;
+    }
   }
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n${serialize(data, rootTag, 0)}`;

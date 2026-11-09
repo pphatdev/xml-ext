@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XML Pro Reader</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/chart.css" />
+  <link rel="stylesheet" href="css/reader.css" />
+  <link rel="icon" type="image/x-icon" href="fav.ico" />
+  <link rel="shortcut icon" href="fav.ico" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+</head>
+<body class="reader-body">
+  <!-- Top Sticky Toolbar -->
+  <header class="reader-toolbar">
+    <div class="reader-toolbar-left">
+      <a href="index.html" target="_blank" class="reader-brand" id="reader-brand-link" title="Open in XML Pro Studio">
+        <img src="fav.ico" class="reader-brand-logo" alt="XML Pro Logo" width="20" height="20" />
+        <span>XML Pro</span>
+      </a>
+      <div class="reader-stats-pill" id="reader-stats-pill">
+        <span id="reader-stat-root">&lt;xml&gt;</span>
+        <span>•</span>
+        <span id="reader-stat-elems">0 elem</span>
+        <span>•</span>
+        <span id="reader-stat-size">0 B</span>
+      </div>
+    </div>
+
+    <!-- Live Search Box -->
+    <div class="reader-toolbar-center">
+      <div class="reader-search-box">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+        </svg>
+        <input type="text" class="reader-search-input" id="reader-search-input" placeholder="Search XML tags, values, URLs... (Ctrl+F)" spellcheck="false" autocomplete="off" />
+        <span class="reader-search-counter" id="reader-search-counter"></span>
+        <button type="button" class="reader-search-btn" id="reader-btn-prev" title="Previous match (Shift+Enter)" aria-label="Previous match">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <button type="button" class="reader-search-btn" id="reader-btn-next" title="Next match (Enter)" aria-label="Next match">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+        <button type="button" class="reader-search-btn" id="reader-btn-clear" title="Clear search (Esc)" aria-label="Clear search">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="reader-toolbar-right">
+      <!-- View Switcher -->
+      <div class="reader-view-switch" role="group" aria-label="XML View Mode">
+        <button type="button" class="reader-view-btn active" id="reader-view-tree-btn" title="Interactive XML Tree View (Alt+1)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="view-btn-icon icon icon-tabler icons-tabler-outline icon-tabler-subtask">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M6 9l6 0" />
+            <path d="M4 5l4 0" />
+            <path d="M6 5v11a1 1 0 0 0 1 1h5" />
+            <path d="M12 8a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1l0 -2" />
+            <path d="M12 16a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1l0 -2" />
+          </svg>
+        </button>
+
+        <button type="button" class="reader-view-btn" id="reader-view-chart-btn" title="Interactive XML Chart View (Alt+2)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="view-btn-icon icon icon-tabler icons-tabler-filled icon-tabler-chart-dots-3">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M18 2a4 4 0 1 1 -3.843 5.114l-6.295 .786a3 3 0 0 1 -.094 .257l6.446 4.431a3 3 0 1 1 -.695 4.099l-3.527 1.058q .008 .127 .008 .255a4 4 0 1 1 -8 0l.005 -.2a4 4 0 0 1 7.366 -1.954l3.64 -1.094l.01 -.102q .023 -.204 .074 -.4l-6.688 -4.6a3 3 0 0 1 -4.407 -2.65l.005 -.176a3 3 0 0 1 5.784 -.931l6.312 -.79a4 4 0 0 1 3.899 -3.103" />
+          </svg>
+        </button>
+
+        <button type="button" class="reader-view-btn" id="reader-view-raw-btn" title="Formatted Raw Data Source (Alt+3)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="view-btn-icon icon icon-tabler icons-tabler-outline icon-tabler-code-dots" id="reader-view-raw-icon">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M15 12h.01" />
+            <path d="M12 12h.01" />
+            <path d="M9 12h.01" />
+            <path d="M6 19a2 2 0 0 1 -2 -2v-4l-1 -1l1 -1v-4a2 2 0 0 1 2 -2" />
+            <path d="M18 19a2 2 0 0 0 2 -2v-4l1 -1l-1 -1v-4a2 2 0 0 0 -2 -2" />
+          </svg>
+        </button>
+
+        <button type="button" class="reader-view-btn" id="reader-view-split-btn" title="Split Screen: Tree & Raw (Alt+4)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="view-btn-icon icon icon-tabler icons-tabler-outline icon-tabler-layout-columns">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
+            <path d="M12 4l0 16" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="reader-toolbar-divider"></div>
+
+      <!-- Tree Collapse / Expand Group -->
+      <div class="reader-btn-group" role="group" aria-label="Tree Controls">
+        <button type="button" class="reader-group-btn" id="reader-btn-collapse" title="Collapse All (Alt+C)" aria-label="Collapse All">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-fold">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 3v6l3 -3m-6 0l3 3" />
+            <path d="M12 21v-6l3 3m-6 0l3 -3" />
+            <path d="M4 12l1 0" />
+            <path d="M9 12l1 0" />
+            <path d="M14 12l1 0" />
+            <path d="M19 12l1 0" />
+          </svg>
+        </button>
+        <button type="button" class="reader-group-btn" id="reader-btn-expand" title="Expand All (Alt+E)" aria-label="Expand All">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-unfold">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 9V3M15 6L12 3L9 6" />
+            <path d="M12 15V21M15 18L12 21L9 18" />
+            <path d="M4 12H5" />
+            <path d="M9 12H10" />
+            <path d="M14 12H15" />
+            <path d="M19 12H20" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="reader-toolbar-divider"></div>
+
+      <!-- Copy & Download Group -->
+      <div class="reader-btn-group" role="group" aria-label="Export Actions">
+        <button type="button" class="reader-group-btn" id="reader-btn-copy" title="Copy Formatted XML" aria-label="Copy XML">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+          </svg>
+        </button>
+        <button type="button" class="reader-group-btn" id="reader-btn-download" title="Download XML File" aria-label="Download XML">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="reader-toolbar-divider"></div>
+
+      <!-- App Actions -->
+      <a href="index.html" target="_blank" class="reader-btn reader-btn-primary" id="reader-btn-studio" title="Open Full XML Pro Studio" aria-label="Open Studio">
+        <span>Studio</span>
+      </a>
+      <button type="button" class="reader-btn reader-btn-icon-only" id="reader-btn-theme" title="Toggle Dark/Light Theme" aria-label="Toggle Theme">
+        <svg class="theme-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+        </svg>
+      </button>
+      <button type="button" class="reader-btn reader-btn-icon-only" id="reader-btn-power" title="Disable Reader and view browser raw source (Raw / Format toggle)" aria-label="Disable Reader and view raw source">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-braces-off">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M5.176 5.177c-.113 .251 -.176 .53 -.176 .823v3c0 1.657 -.895 3 -2 3c1.105 0 2 1.343 2 3v3a2 2 0 0 0 2 2" />
+          <path d="M17 4a2 2 0 0 1 2 2v3c0 1.657 .895 3 2 3c-1.105 0 -2 1.343 -2 3m-.176 3.821a2 2 0 0 1 -1.824 1.179" />
+          <path d="M3 3l18 18" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Reader Body Panes -->
+  <main class="reader-main">
+    <div id="reader-pane-tree" class="reader-pane">
+      <div id="reader-tree-root" class="reader-tree">
+        <div class="reader-loading-state" style="padding: 3rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+          <svg style="width: 26px; height: 26px; margin: 0 auto 0.6rem auto; color: #38bdf8; display: block; animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+          </svg>
+          <div>Loading XML Document...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="reader-pane-chart" class="reader-pane hidden">
+      <div id="reader-chart-mount"></div>
+    </div>
+
+    <!-- Draggable Resizer for Reader Split View (Drag Left/Right) -->
+    <div class="reader-resizer hidden" id="reader-resizer" role="separator" aria-orientation="vertical" tabindex="0" title="Drag left/right to resize split view (Double-click to reset 50/50)">
+      <div class="resizer-handle"></div>
+    </div>
+
+    <div id="reader-pane-raw" class="reader-pane hidden">
+      <div class="reader-raw-container">
+        <div class="reader-raw-gutter" id="reader-raw-gutter"></div>
+        <pre class="reader-raw-code" id="reader-raw-code"></pre>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Status Bar -->
+  <footer class="reader-footer">
+    <div class="reader-footer-left">
+      <span>Path:</span>
+      <span class="reader-xpath-crumb" id="reader-status-xpath">/root</span>
+    </div>
+    <div class="reader-footer-right">
+      <span id="reader-footer-lines">0 lines</span>
+      <span>•</span>
+      <span id="reader-footer-size">0 B</span>
+      <span>•</span>
+      <span>UTF-8</span>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div class="reader-toast" id="reader-toast"></div>
+
+  <script type="module" src="reader.js"></script>
+</body>
+</html>
+
