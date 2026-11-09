@@ -100,6 +100,134 @@ export function generateSitemapFromUrls(urlInput, options = {}) {
 }
 
 /**
+ * Crawls a target URL and extracts all internal same-origin links from HTML
+ * @param {string} targetUrl
+ * @param {string} htmlContent
+ * @returns {string[]} Array of unique, normalized absolute URLs
+ */
+export function extractInternalLinksFromHtml(targetUrl, htmlContent) {
+  if (!htmlContent || typeof htmlContent !== 'string') return [];
+  const base = normalizeUrl(targetUrl);
+  let baseOrigin = '';
+  try {
+    baseOrigin = new URL(base).origin;
+  } catch (_) {
+    return [base];
+  }
+
+  const foundUrls = new Set();
+  foundUrls.add(base);
+
+  // Match href attributes: href="..." or href='...'
+  const hrefRegex = /<a\s+[^>]*?href\s*=\s*(["'])([\s\S]*?)\1/gi;
+  let match;
+  while ((match = hrefRegex.exec(htmlContent)) !== null) {
+    const rawHref = match[2].trim();
+    if (!rawHref) continue;
+
+    // Ignore anchors, javascript:, mailto:, tel:
+    if (
+      rawHref.startsWith('#') ||
+      rawHref.startsWith('javascript:') ||
+      rawHref.startsWith('mailto:') ||
+      rawHref.startsWith('tel:') ||
+      rawHref.startsWith('data:')
+    ) {
+      continue;
+    }
+
+    try {
+      const resolved = new URL(rawHref, base);
+      // Keep only same origin (internal links)
+      if (resolved.origin === baseOrigin) {
+        // Strip fragment (#)
+        resolved.hash = '';
+        // Skip common static binary assets (.css, .js, images, fonts, zips)
+        if (!/\.(png|jpe?g|gif|svg|webp|ico|css|js|woff2?|ttf|eot|pdf|zip|tar|gz|mp4|webm)($|\?)/i.test(resolved.pathname)) {
+          foundUrls.add(resolved.href);
+        }
+      }
+    } catch (_) {}
+  }
+
+  return Array.from(foundUrls);
+}
+
+/**
+ * Discovers real-world website URLs by checking for online sitemap.xml and/or crawling live HTML
+ * @param {string} websiteUrl
+ * @param {Function} fetcherFn - async (url) => { text: string }
+ * @param {object} [options]
+ * @returns {Promise<{ urls: string[], source: 'sitemap.xml' | 'crawler' | 'fallback', sitemapXml?: string, targetSitemapUrl?: string }>}
+ */
+export async function crawlRealWebsiteUrls(websiteUrl, fetcherFn, options = {}) {
+  const normBase = normalizeUrl(websiteUrl);
+  let parsed;
+  try {
+    parsed = new URL(normBase);
+  } catch (_) {
+    return { urls: [normBase], source: 'fallback' };
+  }
+
+  const origin = parsed.origin;
+  const checkSitemap = options.checkSitemap !== false;
+  const crawlHtml = options.crawlHtml !== false;
+
+  // 1. First, check if the website has an existing real sitemap.xml online
+  if (checkSitemap && typeof fetcherFn === 'function') {
+    const sitemapCandidates = [
+      `${origin}/sitemap.xml`,
+      `${origin}/sitemap_index.xml`
+    ];
+
+    for (const smUrl of sitemapCandidates) {
+      try {
+        const res = await fetcherFn(smUrl);
+        if (res && res.text) {
+          const text = res.text.trim();
+          if (text.startsWith('<?xml') || text.includes('<urlset') || text.includes('<sitemapindex')) {
+            const entries = parseSitemapEntries(text);
+            if (entries && entries.length > 0) {
+              return {
+                urls: entries.map(e => e.loc),
+                source: 'sitemap.xml',
+                sitemapXml: text,
+                targetSitemapUrl: smUrl
+              };
+            }
+          }
+        }
+      } catch (_) {
+        // Ignore error and proceed
+      }
+    }
+  }
+
+  // 2. Fetch the live homepage HTML and extract real internal links
+  if (crawlHtml && typeof fetcherFn === 'function') {
+    try {
+      const res = await fetcherFn(normBase);
+      if (res && res.text) {
+        const links = extractInternalLinksFromHtml(normBase, res.text);
+        if (links.length > 1) {
+          return {
+            urls: links,
+            source: 'crawler'
+          };
+        }
+      }
+    } catch (_) {
+      // Ignore error and proceed to fallback
+    }
+  }
+
+  return {
+    urls: [normBase],
+    source: 'fallback'
+  };
+}
+
+/**
  * Generates an XML sitemap from JSON data
  * @param {string|object} jsonInput
  * @param {object} [options]
@@ -237,4 +365,84 @@ function escapeXml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 }
+
+/**
+ * Parses generated or existing sitemap XML into structured route entries
+ * @param {string} xmlString
+ * @returns {Array<{type: 'url'|'sitemap', loc: string, lastmod: string, changefreq: string, priority: string}>}
+ */
+export function parseSitemapEntries(xmlString) {
+  if (!xmlString || typeof xmlString !== 'string') return [];
+  const entries = [];
+
+  // 1. If DOMParser is available (Browser context)
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      const doc = new DOMParser().parseFromString(xmlString, 'application/xml');
+      const isIndex = doc.querySelector('sitemapindex') !== null;
+      if (isIndex) {
+        const sitemaps = doc.querySelectorAll('sitemap');
+        sitemaps.forEach(sm => {
+          const loc = sm.querySelector('loc')?.textContent?.trim() || '';
+          const lastmod = sm.querySelector('lastmod')?.textContent?.trim() || '';
+          if (loc) {
+            entries.push({ type: 'sitemap', loc, lastmod, changefreq: '', priority: '' });
+          }
+        });
+        if (entries.length > 0) return entries;
+      } else {
+        const urls = doc.querySelectorAll('url');
+        urls.forEach(u => {
+          const loc = u.querySelector('loc')?.textContent?.trim() || '';
+          const lastmod = u.querySelector('lastmod')?.textContent?.trim() || '';
+          const changefreq = u.querySelector('changefreq')?.textContent?.trim() || '';
+          const priority = u.querySelector('priority')?.textContent?.trim() || '';
+          if (loc) {
+            entries.push({ type: 'url', loc, lastmod, changefreq, priority });
+          }
+        });
+        if (entries.length > 0) return entries;
+      }
+    } catch (_) {}
+  }
+
+  // 2. High-speed regex parser fallback (Deno / Node / SSR context)
+  const isIndex = /<sitemapindex[\s>]/i.test(xmlString);
+  if (isIndex) {
+    const sitemapBlocks = xmlString.match(/<sitemap>[\s\S]*?<\/sitemap>/gi) || [];
+    for (const b of sitemapBlocks) {
+      const locMatch = b.match(/<loc>([\s\S]*?)<\/loc>/i);
+      const lastmodMatch = b.match(/<lastmod>([\s\S]*?)<\/lastmod>/i);
+      if (locMatch) {
+        entries.push({
+          type: 'sitemap',
+          loc: locMatch[1].trim(),
+          lastmod: lastmodMatch ? lastmodMatch[1].trim() : '',
+          changefreq: '',
+          priority: ''
+        });
+      }
+    }
+  } else {
+    const urlBlocks = xmlString.match(/<url>[\s\S]*?<\/url>/gi) || [];
+    for (const b of urlBlocks) {
+      const locMatch = b.match(/<loc>([\s\S]*?)<\/loc>/i);
+      const lastmodMatch = b.match(/<lastmod>([\s\S]*?)<\/lastmod>/i);
+      const freqMatch = b.match(/<changefreq>([\s\S]*?)<\/changefreq>/i);
+      const prioMatch = b.match(/<priority>([\s\S]*?)<\/priority>/i);
+      if (locMatch) {
+        entries.push({
+          type: 'url',
+          loc: locMatch[1].trim(),
+          lastmod: lastmodMatch ? lastmodMatch[1].trim() : '',
+          changefreq: freqMatch ? freqMatch[1].trim() : '',
+          priority: prioMatch ? prioMatch[1].trim() : ''
+        });
+      }
+    }
+  }
+
+  return entries;
+}
+
 
