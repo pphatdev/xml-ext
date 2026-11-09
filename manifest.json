@@ -34,7 +34,7 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "run_at": "document_start",
+      "run_at": "document_end",
       "all_frames": false
     }
   ],
@@ -44,7 +44,8 @@
     "contextMenus",
     "activeTab",
     "tabs",
-    "webNavigation"
+    "webNavigation",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -55,9 +56,13 @@
         "docs/*",
         "docs.html",
         "index.html",
+        "reader.html",
+        "reader.js",
         "css/*",
         "icons/*",
-        "src/*"
+        "src/*",
+        "fav.ico",
+        "favicon.ico"
       ],
       "matches": ["<all_urls>"]
     }
