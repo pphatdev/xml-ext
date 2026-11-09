@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="css/editor.css" />
   <link rel="stylesheet" href="css/tree-view.css" />
   <link rel="stylesheet" href="css/chart.css" />
+  <link rel="icon" type="image/x-icon" href="fav.ico" />
+  <link rel="shortcut icon" href="fav.ico" />
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
 </head>
 <body>
@@ -15,9 +17,7 @@
   <header class="app-header">
     <div class="brand-group">
       <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
+        <img src="fav.ico" class="brand-logo-img" alt="XML Pro Logo" width="22" height="22" />
       </div>
       <div>
         <div style="display: flex; align-items: center; gap: 0.4rem;">
@@ -259,6 +259,11 @@
       <div class="pane-content" id="editor-container"></div>
     </section>
 
+    <!-- Draggable Resizer Gutter (Drag Left/Right to Resize Panes) -->
+    <div class="workbench-resizer" id="workbench-resizer" role="separator" aria-orientation="vertical" tabindex="0" title="Drag left/right to resize split view (Double-click to reset 50/50)">
+      <div class="resizer-handle"></div>
+    </div>
+
     <!-- Right Pane: Multi-Format Visualizer & Tools -->
     <section class="workbench-pane right-pane">
       <div class="pane-header">
@@ -270,8 +275,9 @@
             Tree
           </button>
           <button type="button" class="workbench-tab" data-view="chart">
-            <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="tab-icon icon icon-tabler icons-tabler-filled icon-tabler-chart-dots-3">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M18 2a4 4 0 1 1 -3.843 5.114l-6.295 .786a3 3 0 0 1 -.094 .257l6.446 4.431a3 3 0 1 1 -.695 4.099l-3.527 1.058q .008 .127 .008 .255a4 4 0 1 1 -8 0l.005 -.2a4 4 0 0 1 7.366 -1.954l3.64 -1.094l.01 -.102q .023 -.204 .074 -.4l-6.688 -4.6a3 3 0 0 1 -4.407 -2.65l.005 -.176a3 3 0 0 1 5.784 -.931l6.312 -.79a4 4 0 0 1 3.899 -3.103" />
             </svg>
             Chart
           </button>
@@ -294,8 +300,11 @@
             YAML
           </button>
           <button type="button" class="workbench-tab" data-view="markdown">
-            <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 3a1 1 0 00-1 1v4a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414 0L12 9.414V12a1 1 0 102 0V8a1 1 0 00-1-1h-.586a1 1 0 00-.707.293L10.5 8.5l-1.207-1.207A1 1 0 008.586 7H6zm9 1a1 1 0 011 1v2.586l.293-.293a1 1 0 111.414 1.414l-2 2a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414l.293.293V9a1 1 0 011-1z" clip-rule="evenodd"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon icon icon-tabler icons-tabler-outline icon-tabler-markdown">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" />
+              <path d="M7 15v-6l2 2l2 -2v6" />
+              <path d="M14 13l2 2l2 -2m-2 2v-6" />
             </svg>
             Markdown
           </button>

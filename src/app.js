@@ -96,9 +96,10 @@ export class App {
     const autoFormat = params.get('autoformat') !== '0';
     const fromSelection = params.get('from') === 'selection';
     const rawXml = params.get('xml');
+    const formatHint = params.get('format');
 
     if (targetUrl) {
-      await this.loadAndFormatUrl(targetUrl, autoFormat);
+      await this.loadAndFormatUrl(targetUrl, autoFormat, formatHint);
       return;
     }
 
@@ -110,9 +111,18 @@ export class App {
     if (rawXml) {
       try {
         const decoded = decodeURIComponent(rawXml);
-        const formatted = formatXml(decoded, { indent: '  ', preserveComments: true, entities: 'auto' });
-        this.editor.setValue(formatted, true);
-        showToast('Auto-formatted XML fields', 'success');
+        const format = formatHint || detectFormat(decoded);
+        if (format === 'json') {
+          const formatted = JSON.stringify(JSON.parse(decoded), null, 2);
+          this.switchEditorFormat('json', false);
+          this.editor.setValue(formatted, true);
+          showToast('Auto-formatted JSON fields', 'success');
+        } else {
+          const formatted = formatXml(decoded, { indent: '  ', preserveComments: true, entities: 'auto' });
+          this.switchEditorFormat('xml', false);
+          this.editor.setValue(formatted, true);
+          showToast('Auto-formatted XML fields', 'success');
+        }
         return;
       } catch (_e) {}
     }
@@ -121,35 +131,56 @@ export class App {
     this.loadSample('ecommerce');
   }
 
-  async loadAndFormatUrl(targetUrl, autoFormat = true) {
+  async loadAndFormatUrl(targetUrl, autoFormat = true, formatHint = null) {
     this.showSourceBanner(targetUrl);
-    showToast(`Loading XML from ${targetUrl}...`, 'info', 2500);
+    showToast(`Loading from ${targetUrl}...`, 'info', 2500);
 
     try {
       const result = await fetchXmlFromUrl(targetUrl);
       const rawText = result.text;
+      const detectedFormat = formatHint || detectFormat(rawText);
 
       let contentToLoad = rawText;
       if (autoFormat) {
-        try {
-          contentToLoad = formatXml(rawText, { indent: '  ', preserveComments: true, entities: 'auto' });
-        } catch (_fmtErr) {
-          contentToLoad = rawText;
+        if (detectedFormat === 'xml') {
+          try {
+            contentToLoad = formatXml(rawText, { indent: '  ', preserveComments: true, entities: 'auto' });
+          } catch (_) {
+            contentToLoad = rawText;
+          }
+        } else if (detectedFormat === 'json') {
+          try {
+            contentToLoad = JSON.stringify(JSON.parse(rawText), null, 2);
+          } catch (_) {
+            contentToLoad = rawText;
+          }
         }
       }
 
-      if (this.editorFormat !== 'xml') {
-        this.switchEditorFormat('xml', false);
+      if (this.editorFormat !== detectedFormat) {
+        this.switchEditorFormat(detectedFormat, false);
       }
 
       this.editor.setValue(contentToLoad, true);
       this.handleContentChange(contentToLoad);
 
-      const valRes = validateXml(contentToLoad);
-      const elemInfo = valRes.valid ? ` (${valRes.elementCount} elements)` : '';
-      showToast(`Auto-formatted XML fields from URL${elemInfo}`, 'success', 4000);
+      if (detectedFormat === 'xml') {
+        const valRes = validateXml(contentToLoad);
+        const elemInfo = valRes.valid ? ` (${valRes.elementCount} elements)` : '';
+        showToast(`Auto-formatted XML fields from URL${elemInfo}`, 'success', 4000);
+      } else if (detectedFormat === 'json') {
+        try {
+          const parsed = JSON.parse(contentToLoad);
+          const keyCount = typeof parsed === 'object' && parsed !== null ? Object.keys(parsed).length : 1;
+          showToast(`Auto-formatted JSON from URL (${keyCount} root keys)`, 'success', 4000);
+        } catch (_) {
+          showToast(`Loaded JSON from URL`, 'success', 4000);
+        }
+      } else {
+        showToast(`Loaded ${detectedFormat.toUpperCase()} from URL`, 'success', 4000);
+      }
     } catch (err) {
-      showToast(`Failed to load XML from URL: ${err.message}`, 'error', 6000);
+      showToast(`Failed to load from URL: ${err.message}`, 'error', 6000);
       this.loadSample('ecommerce');
     }
   }
@@ -263,11 +294,13 @@ export class App {
 
     // 8. Load from URL Modal
     this.urlModal = new UrlModal({
-      onLoadXml: (xml) => {
-        if (this.editorFormat !== 'xml') {
-          this.switchEditorFormat('xml', false);
+      onLoadXml: (content) => {
+        const format = detectFormat(content);
+        if (this.editorFormat !== format) {
+          this.switchEditorFormat(format, false);
         }
-        this.editor.setValue(xml, true);
+        this.editor.setValue(content, true);
+        this.handleContentChange(content);
       }
     });
   }
@@ -441,6 +474,130 @@ export class App {
         this.loadFile(files[0]);
       }
     });
+
+    // 8. Draggable Split Resizer (Drag left/right to resize workbench panes)
+    this.initDraggableResizer();
+  }
+
+  initDraggableResizer() {
+    const layout = document.querySelector('.workbench-layout');
+    const resizer = document.getElementById('workbench-resizer');
+    if (!layout || !resizer) return;
+
+    // Restore saved split ratio
+    try {
+      const savedRatio = localStorage.getItem('xml_pro_split_ratio');
+      if (savedRatio) {
+        const val = parseFloat(savedRatio);
+        if (!isNaN(val) && val >= 15 && val <= 85) {
+          layout.style.setProperty('--workbench-left-width', `${val}%`);
+        }
+      }
+    } catch (_) {}
+
+    let isDragging = false;
+
+    const onMouseDown = (e) => {
+      if (window.innerWidth <= 900) return;
+      isDragging = true;
+      resizer.classList.add('is-dragging');
+      document.body.classList.add('is-resizing-panes');
+      e.preventDefault();
+    };
+
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      const layoutRect = layout.getBoundingClientRect();
+      const clientX = e.clientX;
+      const newWidthPx = clientX - layoutRect.left;
+      const newPct = (newWidthPx / layoutRect.width) * 100;
+      const clampedPct = Math.max(15, Math.min(85, newPct));
+
+      layout.style.setProperty('--workbench-left-width', `${clampedPct.toFixed(2)}%`);
+      try {
+        localStorage.setItem('xml_pro_split_ratio', clampedPct.toFixed(2));
+      } catch (_) {}
+      window.dispatchEvent(new Event('resize'));
+    };
+
+    const onMouseUp = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      resizer.classList.remove('is-dragging');
+      document.body.classList.remove('is-resizing-panes');
+      window.dispatchEvent(new Event('resize'));
+    };
+
+    // Touch support for touchscreens / tablets
+    const onTouchStart = (e) => {
+      if (window.innerWidth <= 900 || !e.touches || !e.touches[0]) return;
+      isDragging = true;
+      resizer.classList.add('is-dragging');
+      document.body.classList.add('is-resizing-panes');
+    };
+
+    const onTouchMove = (e) => {
+      if (!isDragging || !e.touches || !e.touches[0]) return;
+      const layoutRect = layout.getBoundingClientRect();
+      const clientX = e.touches[0].clientX;
+      const newWidthPx = clientX - layoutRect.left;
+      const newPct = (newWidthPx / layoutRect.width) * 100;
+      const clampedPct = Math.max(15, Math.min(85, newPct));
+
+      layout.style.setProperty('--workbench-left-width', `${clampedPct.toFixed(2)}%`);
+      try {
+        localStorage.setItem('xml_pro_split_ratio', clampedPct.toFixed(2));
+      } catch (_) {}
+      window.dispatchEvent(new Event('resize'));
+    };
+
+    const onTouchEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      resizer.classList.remove('is-dragging');
+      document.body.classList.remove('is-resizing-panes');
+      window.dispatchEvent(new Event('resize'));
+    };
+
+    // Double-click to reset back to 50/50
+    resizer.addEventListener('dblclick', () => {
+      layout.style.setProperty('--workbench-left-width', '50%');
+      try {
+        localStorage.removeItem('xml_pro_split_ratio');
+      } catch (_) {}
+      window.dispatchEvent(new Event('resize'));
+      showToast('Split layout reset to 50/50', 'info', 2000);
+    });
+
+    // Keyboard accessibility: Left / Right arrow keys when focused
+    resizer.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const currentStyle = getComputedStyle(layout).getPropertyValue('--workbench-left-width');
+        let currentPct = parseFloat(currentStyle) || 50;
+        const delta = e.key === 'ArrowLeft' ? -3 : 3;
+        const newPct = Math.max(15, Math.min(85, currentPct + delta));
+        layout.style.setProperty('--workbench-left-width', `${newPct.toFixed(2)}%`);
+        try {
+          localStorage.setItem('xml_pro_split_ratio', newPct.toFixed(2));
+        } catch (_) {}
+        window.dispatchEvent(new Event('resize'));
+      } else if (e.key === 'Home') {
+        layout.style.setProperty('--workbench-left-width', '50%');
+        try {
+          localStorage.removeItem('xml_pro_split_ratio');
+        } catch (_) {}
+        window.dispatchEvent(new Event('resize'));
+      }
+    });
+
+    resizer.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    resizer.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
   }
 
   loadSample(sampleKey) {
@@ -701,6 +858,9 @@ export class App {
       this.treeView.loadXml(xml);
     } else if (this.activeView === 'chart') {
       this.chartView.loadXml(xml);
+      if (typeof requestAnimationFrame !== 'undefined') {
+        requestAnimationFrame(() => this.chartView.fitToView(false));
+      }
     } else if (this.activeView === 'linter') {
       this.linterView.lint(xml);
     } else if (this.activeView === 'analyzer') {
@@ -718,6 +878,12 @@ export class App {
     if (!content.trim()) return;
 
     if (this.editorFormat === 'xml') {
+      const detected = detectFormat(content);
+      if (detected !== 'xml') {
+        this.switchEditorFormat(detected, false);
+        this.formatCurrentContent(entityMode);
+        return;
+      }
       this.formatCurrentXml(entityMode);
       return;
     }
@@ -834,6 +1000,12 @@ export class App {
     const content = this.editor.getValue();
 
     if (this.editorFormat === 'xml') {
+      const detected = detectFormat(content);
+      if (detected !== 'xml') {
+        this.switchEditorFormat(detected, false);
+        this.validateCurrentContent();
+        return;
+      }
       this.validateCurrentXml();
       return;
     }
