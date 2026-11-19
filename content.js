@@ -24,8 +24,40 @@
 
   let docInfo = null;
 
+  // A genuine HTML page: let the browser render it normally.
+  // Only take over when the "HTML" is really a bare data dump (single <pre> or plain text)
+  // whose content is valid JSON or XML, e.g. an API that mislabels its Content-Type.
+  function detectRawDataInHtml() {
+    const body = document.body;
+    if (!body) return { supported: false, format: null };
+
+    const children = body.children;
+    const isBareDump = children.length === 0 ||
+      (children.length === 1 && children[0].tagName.toLowerCase() === 'pre');
+    if (!isBareDump) return { supported: false, format: null };
+
+    const text = (body.textContent || '').trim();
+    if (!text) return { supported: false, format: null };
+
+    if (text.startsWith('{') || text.startsWith('[')) {
+      try {
+        JSON.parse(text);
+        return { supported: true, format: 'json' };
+      } catch { /* not JSON */ }
+    }
+    if (text.startsWith('<?xml')) {
+      return { supported: true, format: 'xml' };
+    }
+    return { supported: false, format: null };
+  }
+
   function detectSupportedDocument() {
     const contentType = (document.contentType || '').toLowerCase();
+
+    // 0. HTML documents render as normal web pages (checked first: "application/xhtml+xml" contains "xml")
+    if (contentType.includes('html')) {
+      return detectRawDataInHtml();
+    }
 
     // 1. Check Content-Type header
     if (contentType.includes('xml') || contentType.includes('rss') || contentType.includes('atom')) {
