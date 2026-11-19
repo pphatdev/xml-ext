@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Ensure initial view is strictly applied
   setView('tree');
+  let initialViewApplied = false;
 
   btnViewTree.addEventListener('click', () => setView('tree'));
   btnViewChart.addEventListener('click', () => setView('chart'));
@@ -403,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Update Header Pill
-    statRoot.textContent = `<${formatBadge}>`;
+    statRoot.textContent = format === 'xml' ? `<${formatBadge}>` : formatBadge;
     statElems.textContent = `${totalElements} elem`;
     statSize.textContent = formatBytes(totalBytes);
 
@@ -436,6 +437,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Populate Raw Pane with Syntax Theme Highlighting
     rawGutter.textContent = lines.map((_, i) => i + 1).join('\n');
     rawCode.innerHTML = highlightCode(formattedDisplay, format);
+
+    // JSON opens on the formatted Raw tab (once, so later reloads keep the user's tab)
+    if (!initialViewApplied) {
+      initialViewApplied = true;
+      if (format === 'json') setView('raw');
+    }
 
     // Populate Tree Pane
     treeRoot.innerHTML = '';
