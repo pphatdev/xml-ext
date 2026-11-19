@@ -4,7 +4,7 @@
  * local dev server proxy, and multi-tier public CORS proxies.
  */
 
-export async function fetchXmlFromUrl(targetUrl, options = {}) {
+export async function fetchXmlFromUrl(targetUrl, _options = {}) {
   const url = (targetUrl || '').trim();
   if (!url) {
     throw new Error('URL cannot be empty');

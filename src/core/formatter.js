@@ -19,7 +19,7 @@ export function formatXml(xmlString, options = {}) {
   let parsed;
   try {
     parsed = parseXml(xmlString, { tolerant: true });
-  } catch (err) {
+  } catch {
     // Fallback regex-based beautifier if parsing fails
     return fallbackFormatXml(xmlString, indent);
   }
@@ -167,7 +167,7 @@ function fallbackFormatXml(xml, indent) {
   const lines = cleaned.split('\r\n');
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i].trim();
+    const line = lines[i].trim();
     if (!line) continue;
 
     if (line.match(/^<\/\w/)) {
@@ -184,3 +184,19 @@ function fallbackFormatXml(xml, indent) {
   return formatted.trim();
 }
 
+
+/**
+ * Pretty-prints a JSON string. Returns `null` when the input is not valid JSON,
+ * so callers can fall back to the raw text.
+ * @param {string} text
+ * @param {number} [indent=2]
+ * @returns {string | null}
+ */
+export function tryFormatJson(text, indent = 2) {
+  if (typeof text !== 'string' || !text.trim()) return null;
+  try {
+    return JSON.stringify(JSON.parse(text), null, indent);
+  } catch {
+    return null;
+  }
+}

@@ -38,7 +38,7 @@ export function minifyXml(xmlString, options = {}) {
     // Trim whitespace around tags
     result = result.replace(/>\s+</g, '><');
     // Normalize spaces inside tags (between attributes)
-    result = result.replace(/<([a-zA-Z0-9.\-_:]+)(\s+[^>]*?)?>/g, (match, tagName, attrs) => {
+    result = result.replace(/<([a-zA-Z0-9.\-_:]+)(\s+[^>]*?)?>/g, (_match, tagName, attrs) => {
       if (!attrs) return `<${tagName}>`;
       const cleanAttrs = attrs.replace(/\s+/g, ' ').trim();
       return `<${tagName} ${cleanAttrs}>`;

@@ -181,7 +181,7 @@ export class DocsApp {
           this.docs = [...BUILTIN_DOCS, ...parsed];
         }
       }
-    } catch (_) {}
+    } catch { /* ignore: best-effort */ }
   }
 
   saveCustomDocs() {

@@ -6,11 +6,14 @@
     "test": "deno test",
     "dev": "deno run --allow-net --allow-read dev-server.js",
     "fmt": "deno fmt src/ tests/",
-    "lint": "deno lint src/ tests/"
+    "fmt:check": "deno fmt --check src/ tests/",
+    "lint": "deno lint src/ tests/",
+    "check": "deno lint src/ tests/ && deno test"
   },
   "lint": {
     "rules": {
-      "exclude": ["no-explicit-any", "no-unused-vars"]
+      "tags": ["recommended"],
+      "exclude": ["no-window", "no-window-prefix"]
     }
   },
   "fmt": {

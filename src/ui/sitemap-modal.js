@@ -691,7 +691,7 @@ export class SitemapModal {
         try {
           await navigator.clipboard.writeText(url);
           showToast('Route URL copied', 'success');
-        } catch (_) {}
+        } catch { /* ignore: best-effort */ }
       });
     });
   }

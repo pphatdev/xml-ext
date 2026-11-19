@@ -1,5 +1,5 @@
-import { assert, assertEquals } from './assert.js';
-import { formatXml, formatXmlAsEntities, decodeXmlEntities } from '../src/core/formatter.js';
+import { assert } from './assert.js';
+import { formatXml, formatXmlAsEntities, decodeXmlEntities, tryFormatJson } from '../src/core/formatter.js';
 
 Deno.test('Format minified XML with proper indentation', () => {
   const minified = `<root><child id="1"><subchild>Content</subchild></child><empty/></root>`;
@@ -65,3 +65,13 @@ Deno.test('Format complex fields with nested tags and attributes', () => {
 });
 
 
+
+Deno.test('tryFormatJson pretty-prints valid JSON', () => {
+  assert(tryFormatJson('{"a":1,"b":[1,2]}') === '{\n  "a": 1,\n  "b": [\n    1,\n    2\n  ]\n}');
+});
+
+Deno.test('tryFormatJson returns null for invalid or empty input', () => {
+  assert(tryFormatJson('{"a":') === null);
+  assert(tryFormatJson('<root/>') === null);
+  assert(tryFormatJson('   ') === null);
+});

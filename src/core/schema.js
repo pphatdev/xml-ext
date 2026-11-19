@@ -39,7 +39,7 @@ export function validateXmlSchema(xmlString, schemaRules = {}) {
       // Required attributes check
       if (rule.requiredAttributes) {
         for (const reqAttr of rule.requiredAttributes) {
-          if (!node.attributes || !node.attributes.hasOwnProperty(reqAttr)) {
+          if (!node.attributes || !Object.hasOwn(node.attributes, reqAttr)) {
             result.valid = false;
             result.errors.push({
               line: node.line || 1,

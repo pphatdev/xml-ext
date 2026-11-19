@@ -1,4 +1,4 @@
-import { assert, assertEquals } from './assert.js';
+import { assert } from './assert.js';
 import { minifyXml, getMinifyStats } from '../src/core/minifier.js';
 
 Deno.test('Minify XML collapses whitespace and comments', () => {

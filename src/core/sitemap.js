@@ -86,7 +86,7 @@ export function generateSitemapFromUrls(urlInput, options = {}) {
       if (parsed.pathname === '/' || parsed.pathname === '') {
         priority = homePriority;
       }
-    } catch (_) {}
+    } catch { /* ignore: best-effort */ }
 
     return {
       loc: u,
@@ -147,7 +147,7 @@ export function extractInternalLinksFromHtml(targetUrl, htmlContent) {
           foundUrls.add(resolved.href);
         }
       }
-    } catch (_) {}
+    } catch { /* ignore: best-effort */ }
   }
 
   return Array.from(foundUrls);
@@ -403,7 +403,7 @@ export function parseSitemapEntries(xmlString) {
         });
         if (entries.length > 0) return entries;
       }
-    } catch (_) {}
+    } catch { /* ignore: best-effort */ }
   }
 
   // 2. High-speed regex parser fallback (Deno / Node / SSR context)

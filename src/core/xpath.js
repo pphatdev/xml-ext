@@ -115,7 +115,7 @@ function fallbackEvaluateXPath(xmlString, xpathExpr) {
     const targetTag = parts[0].replace(/\[.*\]/, '');
     const attrMatch = parts[0].match(/\[@([a-zA-Z0-9_\-]+)\s*=\s*['"]([^'"]+)['"]\]/);
 
-    function searchAll(node) {
+    const searchAll = (node) => {
       if (node.type === 'element') {
         let isMatch = matchTag(node, targetTag);
         if (isMatch && attrMatch) {
@@ -145,7 +145,7 @@ function fallbackEvaluateXPath(xmlString, xpathExpr) {
           }
         }
       }
-    }
+    };
 
     searchAll(parsed.root);
   } else if (expr.startsWith('/')) {

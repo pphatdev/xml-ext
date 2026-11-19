@@ -7,7 +7,6 @@
 
 import {
   xmlToJson,
-  jsonToXml,
   xmlToTxt,
   xmlToCsv,
   xmlToYaml,

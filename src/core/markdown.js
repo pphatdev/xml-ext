@@ -15,7 +15,6 @@ export function parseMarkdown(mdString) {
   let inList = false;
   let listType = 'ul'; // 'ul' | 'ol'
   let inTable = false;
-  let tableHeaderParsed = false;
   let inBlockquote = false;
   let blockquoteBuffer = [];
 
@@ -48,7 +47,6 @@ export function parseMarkdown(mdString) {
     if (inTable) {
       output.push('</tbody></table></div>');
       inTable = false;
-      tableHeaderParsed = false;
     }
   }
 
@@ -166,7 +164,6 @@ export function parseMarkdown(mdString) {
 
       if (!inTable) {
         inTable = true;
-        tableHeaderParsed = true;
         output.push('<div class="table-responsive"><table class="docs-table"><thead><tr>');
         for (const cell of cells) {
           output.push(`<th>${renderInline(cell)}</th>`);

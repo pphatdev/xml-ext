@@ -76,7 +76,7 @@ export function xmlToJson(xmlString, options = {}) {
         const childVal = transformClean(child);
         const childName = child.name;
 
-        if (obj.hasOwnProperty(childName)) {
+        if (Object.hasOwn(obj, childName)) {
           if (Array.isArray(obj[childName])) {
             obj[childName].push(childVal);
           } else {
@@ -546,7 +546,7 @@ export function xmlToTxt(xmlString, options = {}) {
 
   if (mode === 'raw') {
     // Just extracts all text nodes
-    function extractText(node) {
+    const extractText = (node) => {
       if (node.type === 'text' && node.text.trim()) {
         lines.push(node.text.trim());
       }
@@ -555,7 +555,7 @@ export function xmlToTxt(xmlString, options = {}) {
           extractText(child);
         }
       }
-    }
+    };
     extractText(parsed.root);
     return lines.join('\n');
   }
@@ -936,7 +936,7 @@ export function xmlToToml(xmlString, options = {}) {
  * @param {object} [options]
  * @returns {string} TOML string
  */
-export function jsonToToml(obj, options = {}) {
+export function jsonToToml(obj, _options = {}) {
   if (!obj || typeof obj !== 'object') return '';
 
   const keys = Object.keys(obj);
@@ -1156,7 +1156,7 @@ export function tomlToXml(tomlString, options = {}) {
  * @param {object} [options]
  * @returns {string} Markdown string
  */
-export function xmlToMarkdown(xmlString, options = {}) {
+export function xmlToMarkdown(xmlString, _options = {}) {
   const parsed = parseXml(xmlString, { tolerant: true });
   if (!parsed.root) return '';
 
@@ -1369,7 +1369,7 @@ export function detectFormat(text) {
     try {
       JSON.parse(trimmed);
       return 'json';
-    } catch (_) {}
+    } catch { /* ignore: best-effort */ }
   }
 
   // 3. TOML check: [section] or [[section]]

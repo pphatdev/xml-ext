@@ -104,9 +104,9 @@ export function encodeEntities(text, options = {}) {
 
   // 5. Numeric or hex encoding for non-ASCII characters
   if (mode === 'numeric') {
-    s = s.replace(/[^\x00-\x7F]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+    s = s.replace(/[\u0080-\uFFFF]/g, (ch) => `&#${ch.charCodeAt(0)};`);
   } else if (mode === 'hex') {
-    s = s.replace(/[^\x00-\x7F]/g, (ch) => `&#x${ch.charCodeAt(0).toString(16).toUpperCase()};`);
+    s = s.replace(/[\u0080-\uFFFF]/g, (ch) => `&#x${ch.charCodeAt(0).toString(16).toUpperCase()};`);
   }
 
   return s;
@@ -196,7 +196,7 @@ export function parseXml(xmlString, options = {}) {
       advance(attrName.length);
       skipWhitespace();
 
-      if (attrs.hasOwnProperty(attrName)) {
+      if (Object.hasOwn(attrs, attrName)) {
         reportError(`Duplicate attribute "${attrName}"`, attrLine, attrCol, index);
       }
 
@@ -220,7 +220,6 @@ export function parseXml(xmlString, options = {}) {
       }
 
       advance(1); // skip quote
-      let valStart = index;
       let valStr = '';
       while (index < length && xmlString[index] !== quoteChar) {
         valStr += xmlString[index];
@@ -324,8 +323,6 @@ export function parseXml(xmlString, options = {}) {
 
     if (peek(9).toUpperCase() === '<!DOCTYPE') {
       // DOCTYPE
-      const startLine = line;
-      const startCol = col;
       advance(9);
       let depth = 1;
       let inQuote = false;

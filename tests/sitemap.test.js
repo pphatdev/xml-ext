@@ -146,6 +146,7 @@ Deno.test('Crawl real website URLs auto-discovers online sitemap.xml', async () 
     <url><loc>https://mysite.com/features</loc><priority>0.8</priority></url>
   </urlset>`;
 
+  // deno-lint-ignore require-await -- mirrors the async fetcher contract
   const mockFetcher = async (url) => {
     if (url === 'https://mysite.com/sitemap.xml') {
       return { text: mockSitemap, method: 'mock' };
@@ -171,6 +172,7 @@ Deno.test('Crawl real website URLs crawls HTML when sitemap.xml does not exist',
     </html>
   `;
 
+  // deno-lint-ignore require-await -- mirrors the async fetcher contract
   const mockFetcher = async (url) => {
     if (url.endsWith('.xml')) {
       throw new Error('Not found 404');

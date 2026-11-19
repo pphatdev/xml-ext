@@ -307,11 +307,11 @@ export class XmlChartView {
 
   collapseAllExceptRootCardFlow(root) {
     this.collapsedNodeIds.clear();
-    const self = this;
+    const collapsedNodeIds = this.collapsedNodeIds;
     function mark(node) {
       if (node.children && node.children.length > 0) {
         if (node !== root && node.id) {
-          self.collapsedNodeIds.add(node.id);
+          collapsedNodeIds.add(node.id);
         }
         for (const child of node.children) {
           mark(child);
@@ -323,11 +323,11 @@ export class XmlChartView {
 
   collapseAllExceptRoot(root) {
     this.collapsedNodeIds.clear();
-    const self = this;
+    const collapsedNodeIds = this.collapsedNodeIds;
     function mark(node) {
       if (node.children && node.children.length > 0) {
         if (node !== root && node._id) {
-          self.collapsedNodeIds.add(node._id);
+          collapsedNodeIds.add(node._id);
         }
         for (const child of node.children) {
           mark(child);
@@ -445,13 +445,13 @@ export class XmlChartView {
     // 1. Traverse and measure cards
     const nodesByDepth = [];
     const allNodes = [];
-    const self = this;
+    const collapsedNodeIds = this.collapsedNodeIds;
 
     function measureCard(card, depth = 0) {
       if (!nodesByDepth[depth]) nodesByDepth[depth] = [];
       nodesByDepth[depth].push(card);
       card.depth = depth;
-      card.isCollapsed = self.collapsedNodeIds.has(card.id);
+      card.isCollapsed = collapsedNodeIds.has(card.id);
 
       let maxLineLen = 0;
       for (const l of card.lines) {
@@ -699,7 +699,7 @@ export class XmlChartView {
   showCardTooltip(node, evt) {
     if (!this.tooltipEl) return;
 
-    let fieldsHtml = node.lines.map(l =>
+    const fieldsHtml = node.lines.map(l =>
       `<span class="tooltip-attr">${escapeXml(l.key)} : ${escapeXml(l.value)}</span>`
     ).join('<br/>');
 
@@ -735,10 +735,10 @@ export class XmlChartView {
     const nodes = [];
     const links = [];
 
-    const self = this;
+    const collapsedNodeIds = this.collapsedNodeIds;
 
     function layoutNode(node, depth = 0) {
-      const isCollapsed = self.collapsedNodeIds.has(node._id);
+      const isCollapsed = collapsedNodeIds.has(node._id);
       node.isCollapsed = isCollapsed;
       node.x = depth * colSpacing;
 
@@ -1063,10 +1063,10 @@ export class XmlChartView {
     const colSpacing = 280;
     const nodes = [];
     const links = [];
-    const self = this;
+    const collapsedNodeIds = this.collapsedNodeIds;
 
     function layoutNode(node, depth = 0) {
-      const isCollapsed = self.collapsedNodeIds.has(node._id);
+      const isCollapsed = collapsedNodeIds.has(node._id);
       node.isCollapsed = isCollapsed;
       node.depth = depth;
       node.x = depth * colSpacing;
@@ -1165,12 +1165,12 @@ export class XmlChartView {
       el.addEventListener('click', () => {
         const id = el.dataset.id;
         if (id) {
-          if (self.collapsedNodeIds.has(id)) {
-            self.collapsedNodeIds.delete(id);
+          if (collapsedNodeIds.has(id)) {
+            collapsedNodeIds.delete(id);
           } else {
-            self.collapsedNodeIds.add(id);
+            collapsedNodeIds.add(id);
           }
-          self.refreshChart();
+          this.refreshChart();
         }
       });
     });

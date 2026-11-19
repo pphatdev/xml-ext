@@ -1,4 +1,4 @@
-import { assert, assertEquals } from './assert.js';
+import { assertEquals } from './assert.js';
 import { evaluateXPath } from '../src/core/xpath.js';
 
 Deno.test('XPath evaluate all elements with //tag', () => {

@@ -15,7 +15,7 @@ import { UrlModal } from './ui/url-modal.js';
 import { XML_SAMPLES } from './samples/samples.js';
 import { fetchXmlFromUrl } from './core/fetcher.js';
 
-import { formatXml } from './core/formatter.js';
+import { formatXml, tryFormatJson } from './core/formatter.js';
 import { minifyXml, getMinifyStats } from './core/minifier.js';
 import { validateXml } from './core/validator.js';
 import {
@@ -104,7 +104,7 @@ export class App {
     }
 
     if (fromSelection) {
-      await this.loadFromSelection();
+      this.loadFromSelection();
       return;
     }
 
@@ -113,7 +113,7 @@ export class App {
         const decoded = decodeURIComponent(rawXml);
         const format = formatHint || detectFormat(decoded);
         if (format === 'json') {
-          const formatted = JSON.stringify(JSON.parse(decoded), null, 2);
+          const formatted = tryFormatJson(decoded) ?? decoded;
           this.switchEditorFormat('json', false);
           this.editor.setValue(formatted, true);
           showToast('Auto-formatted JSON fields', 'success');
@@ -124,7 +124,7 @@ export class App {
           showToast('Auto-formatted XML fields', 'success');
         }
         return;
-      } catch (_e) {}
+      } catch { /* ignore: best-effort */ }
     }
 
     // Default: load sample
@@ -149,11 +149,7 @@ export class App {
             contentToLoad = rawText;
           }
         } else if (detectedFormat === 'json') {
-          try {
-            contentToLoad = JSON.stringify(JSON.parse(rawText), null, 2);
-          } catch (_) {
-            contentToLoad = rawText;
-          }
+          contentToLoad = tryFormatJson(rawText) ?? rawText;
         }
       }
 
@@ -217,22 +213,27 @@ export class App {
     banner.classList.remove('hidden');
   }
 
-  async loadFromSelection() {
+  loadFromSelection() {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       chrome.storage.local.get(['pendingXml'], (res) => {
         if (res.pendingXml) {
-          let content = res.pendingXml;
-          try {
-            content = formatXml(content, { indent: '  ', preserveComments: true, entities: 'auto' });
-          } catch (_e) {}
+          const raw = res.pendingXml;
+          const json = detectFormat(raw) === 'json' ? tryFormatJson(raw) : null;
+          const format = json !== null ? 'json' : 'xml';
+          let content = json ?? raw;
+          if (format === 'xml') {
+            try {
+              content = formatXml(raw, { indent: '  ', preserveComments: true, entities: 'auto' });
+            } catch { /* ignore: keep raw selection if it cannot be formatted */ }
+          }
 
-          if (this.editorFormat !== 'xml') {
-            this.switchEditorFormat('xml', false);
+          if (this.editorFormat !== format) {
+            this.switchEditorFormat(format, false);
           }
           this.editor.setValue(content, true);
           this.handleContentChange(content);
           chrome.storage.local.remove(['pendingXml']);
-          showToast('Loaded and auto-formatted selected XML fields', 'success');
+          showToast(`Loaded and auto-formatted selected ${format.toUpperCase()} fields`, 'success');
         } else {
           this.loadSample('ecommerce');
         }
@@ -294,8 +295,9 @@ export class App {
 
     // 8. Load from URL Modal
     this.urlModal = new UrlModal({
-      onLoadXml: (content) => {
-        const format = detectFormat(content);
+      onLoadXml: (raw) => {
+        const format = detectFormat(raw);
+        const content = format === 'json' ? (tryFormatJson(raw) ?? raw) : raw;
         if (this.editorFormat !== format) {
           this.switchEditorFormat(format, false);
         }
@@ -306,6 +308,24 @@ export class App {
   }
 
   initEvents() {
+    // Auto-format JSON when a paste replaces the whole editor content
+    this.editor.textarea.addEventListener('paste', (e) => {
+      const ta = this.editor.textarea;
+      const replacesAll = ta.selectionStart === 0 && ta.selectionEnd === ta.value.length;
+      const pasted = e.clipboardData?.getData('text/plain') ?? '';
+      if (!replacesAll || detectFormat(pasted) !== 'json') return;
+
+      const formatted = tryFormatJson(pasted);
+      if (formatted === null) return;
+
+      e.preventDefault();
+      if (this.editorFormat !== 'json') {
+        this.switchEditorFormat('json', false);
+      }
+      this.editor.setValue(formatted, true);
+      showToast('Pasted JSON auto-formatted', 'success');
+    });
+
     // Theme toggle
     document.getElementById('btn-theme-toggle').addEventListener('click', () => {
       toggleTheme();
@@ -493,7 +513,7 @@ export class App {
           layout.style.setProperty('--workbench-left-width', `${val}%`);
         }
       }
-    } catch (_) {}
+    } catch { /* ignore: best-effort */ }
 
     let isDragging = false;
 
@@ -516,7 +536,7 @@ export class App {
       layout.style.setProperty('--workbench-left-width', `${clampedPct.toFixed(2)}%`);
       try {
         localStorage.setItem('xml_pro_split_ratio', clampedPct.toFixed(2));
-      } catch (_) {}
+      } catch { /* ignore: best-effort */ }
       window.dispatchEvent(new Event('resize'));
     };
 
@@ -547,7 +567,7 @@ export class App {
       layout.style.setProperty('--workbench-left-width', `${clampedPct.toFixed(2)}%`);
       try {
         localStorage.setItem('xml_pro_split_ratio', clampedPct.toFixed(2));
-      } catch (_) {}
+      } catch { /* ignore: best-effort */ }
       window.dispatchEvent(new Event('resize'));
     };
 
@@ -564,7 +584,7 @@ export class App {
       layout.style.setProperty('--workbench-left-width', '50%');
       try {
         localStorage.removeItem('xml_pro_split_ratio');
-      } catch (_) {}
+      } catch { /* ignore: best-effort */ }
       window.dispatchEvent(new Event('resize'));
       showToast('Split layout reset to 50/50', 'info', 2000);
     });
@@ -574,19 +594,19 @@ export class App {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();
         const currentStyle = getComputedStyle(layout).getPropertyValue('--workbench-left-width');
-        let currentPct = parseFloat(currentStyle) || 50;
+        const currentPct = parseFloat(currentStyle) || 50;
         const delta = e.key === 'ArrowLeft' ? -3 : 3;
         const newPct = Math.max(15, Math.min(85, currentPct + delta));
         layout.style.setProperty('--workbench-left-width', `${newPct.toFixed(2)}%`);
         try {
           localStorage.setItem('xml_pro_split_ratio', newPct.toFixed(2));
-        } catch (_) {}
+        } catch { /* ignore: best-effort */ }
         window.dispatchEvent(new Event('resize'));
       } else if (e.key === 'Home') {
         layout.style.setProperty('--workbench-left-width', '50%');
         try {
           localStorage.removeItem('xml_pro_split_ratio');
-        } catch (_) {}
+        } catch { /* ignore: best-effort */ }
         window.dispatchEvent(new Event('resize'));
       }
     });
@@ -1074,7 +1094,7 @@ export class App {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const content = e.target.result;
+      const raw = e.target.result;
       const name = (file.name || '').toLowerCase();
       let format = 'xml';
       if (name.endsWith('.json')) {
@@ -1088,9 +1108,10 @@ export class App {
       } else if (name.endsWith('.xml')) {
         format = 'xml';
       } else {
-        format = detectFormat(content);
+        format = detectFormat(raw);
       }
 
+      const content = format === 'json' ? (tryFormatJson(raw) ?? raw) : raw;
       this.switchEditorFormat(format, false);
       this.editor.setValue(content, true);
       showToast(`Loaded "${file.name}" as ${format.toUpperCase()} (${(file.size / 1024).toFixed(1)} KB)`, 'success');

@@ -65,7 +65,7 @@ export function analyzeXml(xmlString) {
   let parsed;
   try {
     parsed = parseXml(xmlString, { tolerant: true });
-  } catch (err) {
+  } catch {
     return result;
   }
 
