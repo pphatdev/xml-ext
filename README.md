@@ -1,5 +1,9 @@
 # XML Pro Toolkit — Browser Extension & Web Studio
 
+<p align="center">
+  <img src="cover.png" alt="XML Pro reader showing a JSON API response, auto-formatted in the browser tab" width="100%">
+</p>
+
 A fast, comprehensive, client-side **XML Extension & Workbench** built with modern ES Modules and Manifest V3. Features an advanced code editor, interactive DOM tree visualizer, real-time linter, statistical analyzer, minifier, sitemap generator, validator, and multi-format converters.
 
 ---
